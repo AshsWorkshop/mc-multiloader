@@ -1,0 +1,76 @@
+package net.ashwork.mc.multiloader.api.base.impl;
+
+import com.google.common.collect.ImmutableMap;
+import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
+import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
+import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
+
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * A manager for handling the extensions a loader implements.
+ */
+public final class ExtensionManager implements ExtensionHolder {
+
+    private final Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions;
+
+    /**
+     * Loads and stores the extensions from a given provider. This implementation is meant
+     * to allow ambiguity towards the backing provider, allowing loaders to create registration
+     * methods with additional parameters.
+     *
+     * @param providerClass The class of the extension provider.
+     * @param method The currying method to register extensions to.
+     * @return A {@link ExtensionHolder} for the provider.
+     * @param <PROVIDER> The type of the extension provider.
+     */
+    public static <PROVIDER> ExtensionManager load(Class<PROVIDER> providerClass, Function<PROVIDER, Consumer<ExtensionRegistrar>> method) {
+        var builder = new Builder();
+
+        // Load providers and register extensions
+        ServiceLoader.load(providerClass).forEach(provider -> method.apply(provider).accept(builder));
+
+        return builder.build();
+    }
+
+    private ExtensionManager(Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions) {
+        this.extensions = extensions;
+    }
+
+    @Override
+    public <API> API access(LoaderExtension.Key<API> extension) throws IllegalArgumentException {
+        if (this.extensions.containsKey(extension)) {
+            return (API) this.extensions.get(extension);
+        }
+
+        throw new IllegalArgumentException("Extension '" + extension + "' is not implemented on the current holder");
+    }
+
+    @Override
+    public <API> void accessIfPresent(LoaderExtension.Key<API> extension, Consumer<API> ifPresent) {
+        if (this.extensions.containsKey(extension)){
+            ifPresent.accept((API) this.extensions.get(extension));
+        }
+    }
+
+    private static final class Builder implements ExtensionRegistrar {
+
+        private final ImmutableMap.Builder<LoaderExtension.Key<?>, LoaderExtension<?>> builder;
+
+        private Builder() {
+            this.builder = ImmutableMap.builder();
+        }
+
+        @Override
+        public <API> void provide(LoaderExtension.Key<API> id, LoaderExtension<API> extension) {
+            this.builder.put(id, extension);
+        }
+
+        private ExtensionManager build() {
+            return new ExtensionManager(this.builder.buildOrThrow());
+        }
+    }
+}
