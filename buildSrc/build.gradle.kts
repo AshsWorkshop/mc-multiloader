@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
+
 plugins {
     `kotlin-dsl`
 }
@@ -16,10 +18,14 @@ repositories {
         url = uri("https://maven.fabricmc.net/")
     }
     gradlePluginPortal()
+    mavenCentral()
 }
 
 dependencies {
     // https://projects.neoforged.net/neoforged/moddevgradle
     implementation("net.neoforged:moddev-gradle:${rootProperty("neoforgeGradle")}")
     implementation("net.fabricmc:fabric-loom:${rootProperty("fabricLoom")}")
+    // https://repo.maven.apache.org/maven2/io/github/wasabithumb/jtoml/
+    implementation("io.github.wasabithumb:jtoml:1.5.2")
+    implementation("io.github.wasabithumb:jtoml-kotlin:1.5.2")
 }

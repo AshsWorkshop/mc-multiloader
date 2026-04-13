@@ -5,6 +5,9 @@ build/
 !**/src/test/**/build/
 .kotlin
 
+### Minecraft ###
+run
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
