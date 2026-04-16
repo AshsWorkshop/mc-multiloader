@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
@@ -21,11 +22,21 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
 }
 
 fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: String, withSources: Boolean = true, configurePom: Action<MavenPom>): TaskProvider<Jar> {
+    fun addLicense(copy: AbstractCopyTask) {
+        var license = listOf(project, rootProject).asSequence().filter { it.file("LICENSE").exists() }.map { it.file("LICENSE") }.firstOrNull()
+        if (license != null) {
+            copy.from(license) {
+                rename { "META-INF/${it}"}
+            }
+        }
+    }
+
     val artifacts: MutableList<TaskProvider<Jar>> = mutableListOf(
         tasks.register<Jar>("${name}Jar") {
             group = project.group as String
             archiveBaseName.set(baseName)
             from(*(sources.map { it.output }.toTypedArray()))
+            addLicense(this)
         }
     )
 
@@ -36,6 +47,7 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
                 archiveBaseName.set(baseName)
                 archiveClassifier.set("sources")
                 from(*(sources.map { it.allSource }.toTypedArray()))
+                addLicense(this)
             }
         )
     }
