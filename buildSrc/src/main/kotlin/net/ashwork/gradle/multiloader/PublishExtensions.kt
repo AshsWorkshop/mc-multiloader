@@ -59,7 +59,7 @@ fun MavenPom.dependency(artifact: TaskProvider<Jar>) {
 
 fun MavenPom.dependency(groupId: String, artifactId: String, version: String) {
     withXml {
-        val dependencies: Node = asNode().appendNode("dependencies")
+        val dependencies: Node = if (asNode().getAt(QName("dependencies")).isNotEmpty()) asNode().getAt(QName("dependencies"))[0] as Node else asNode().appendNode("dependencies")
         val dependency = dependencies.appendNode("dependency")
         dependency.appendNode("groupId", groupId)
         dependency.appendNode("artifactId", artifactId)
