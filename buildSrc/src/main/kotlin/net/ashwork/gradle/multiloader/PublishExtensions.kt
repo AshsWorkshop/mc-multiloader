@@ -23,7 +23,7 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
 fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: String, withSources: Boolean = true, configurePom: Action<MavenPom>): TaskProvider<Jar> {
     val artifacts: MutableList<TaskProvider<Jar>> = mutableListOf(
         tasks.register<Jar>("${name}Jar") {
-            group = rootProperty("mod_group")
+            group = project.group as String
             archiveBaseName.set(baseName)
             from(*(sources.map { it.output }.toTypedArray()))
         }
@@ -32,7 +32,7 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
     if (withSources) {
         artifacts.add(
             tasks.register<Jar>("${name}JarSources") {
-                group = rootProperty("mod_group")
+                group = project.group as String
                 archiveBaseName.set(baseName)
                 archiveClassifier.set("sources")
                 from(*(sources.map { it.allSource }.toTypedArray()))
