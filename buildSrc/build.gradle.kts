@@ -20,10 +20,9 @@ repositories {
 }
 
 dependencies {
-    // https://projects.neoforged.net/neoforged/moddevgradle
     implementation("net.neoforged:moddev-gradle:${rootProject.extra["neoforgeGradle"]}")
     implementation("net.fabricmc:fabric-loom:${rootProject.extra["fabricLoom"]}")
-    // https://repo.maven.apache.org/maven2/io/github/wasabithumb/jtoml/
-    implementation("io.github.wasabithumb:jtoml:1.5.2")
-    implementation("io.github.wasabithumb:jtoml-kotlin:1.5.2")
+    implementation("io.github.wasabithumb:jtoml:${rootProject.extra["gradleJtoml"]}")
+    implementation("io.github.wasabithumb:jtoml-kotlin:${rootProject.extra["gradleJtoml"]}")
+    implementation("de.undercouch.download:de.undercouch.download.gradle.plugin:${rootProject.extra["gradleDownload"]}")
 }

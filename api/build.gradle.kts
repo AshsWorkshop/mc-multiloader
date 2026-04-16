@@ -1,6 +1,7 @@
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.provideDelegate
 import net.ashwork.gradle.multiloader.*
+import java.util.Locale
 
 plugins {
     id("multiloader-base")
@@ -16,4 +17,18 @@ internal val data: SourceSet = sourceSets.createFrom("data", base, base)
 neoForge {
     // Configure vanilla mode
     neoFormVersion = rootProperty("vanillaNeoform")
+}
+
+var jar = publishSourceSets(
+    project.name, listOf(base, common, client),
+    project.base.archivesName.get()
+)
+publishSourceSets(
+    "${project.name}Data", listOf(data),
+    "${project.base.archivesName.get()}-data"
+) {
+    name = "${rootProperty("mod_name")} (${project.name}-data)"
+
+    // Need to manually resolve dependency due to source set shenanigans
+    dependency(jar)
 }
