@@ -10,31 +10,20 @@ import org.gradle.kotlin.dsl.withType
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import net.ashwork.gradle.multiloader.*
 
 plugins {
     id("multiloader-base")
     id("net.fabricmc.fabric-loom")
 }
 
-val rootProperty: (String) -> String by rootProject.extra
 internal val api: Project = rootProject.project(":api")
 
-fun createSourceSet(name: String, withClasspath: SourceSet, vararg withOutputs: SourceSet): SourceSet {
-    return sourceSets.create(name) {
-        compileClasspath += withClasspath.compileClasspath
-        runtimeClasspath += withClasspath.runtimeClasspath
-        withOutputs.forEach {
-            compileClasspath += it.output
-            runtimeClasspath += it.output
-        }
-    }
-}
-
 // Create source sets
-internal val base: SourceSet = createSourceSet("base", sourceSets["main"], api.sourceSets["base"])
-internal val common: SourceSet = createSourceSet("common", base, base, api.sourceSets["common"])
-internal val client: SourceSet = createSourceSet("client", common, common, api.sourceSets["client"])
-internal val data: SourceSet = createSourceSet("data", client, client, api.sourceSets["data"])
+internal val base: SourceSet = sourceSets.createFrom("base", sourceSets["main"], api.sourceSets["base"])
+internal val common: SourceSet = sourceSets.createFrom("common", base, base, api.sourceSets["common"])
+internal val client: SourceSet = sourceSets.createFrom("client", common, common, api.sourceSets["client"])
+internal val data: SourceSet = sourceSets.createFrom("data", client, client, api.sourceSets["data"])
 
 tasks.named("compileJava") {
     dependsOn(tasks.named("compileDataJava"))

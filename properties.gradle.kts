@@ -17,5 +17,3 @@ val neoforgeApi by extra("${vanillaMinecraft}.7-beta")
 val fabricLoader by extra("0.19.1")
 val fabricLoom by extra("1.16-SNAPSHOT")
 val fabricApi by extra("0.145.4+${vanillaMinecraft}")
-
-val rootProperty by extra({ name: String -> rootProject.extra[name].toString() })

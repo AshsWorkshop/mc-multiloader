@@ -1,9 +1,9 @@
+import net.ashwork.gradle.multiloader.rootProperty
+
 plugins {
     java
     idea
 }
-
-val rootProperty: (String) -> String by rootProject.extra
 
 base.archivesName = "${rootProperty("mod_id")}-${project.name}"
 group = rootProperty("mod_group")
