@@ -6,14 +6,10 @@ plugins {
 rootProject.name = "multiloader"
 
 // Include all projects
-listOf(
-    "api",
-    "neoforge",
-    "fabric"
-).map {
-    rootProject.projectDir.resolve(it)
-}.flatMap {
-    it.listFiles { it.isDirectory && it.resolve("build.gradle.kts").exists() }.toList()
+rootProject.projectDir.listFiles {
+    it.isDirectory
+            && it.name != "buildSrc"
+            && (it.resolve("build.gradle").exists() || it.resolve("build.gradle.kts").exists())
 }.forEach {
-    include(it.toRelativeString(rootProject.projectDir).replace(File.separator, ":"))
+    include(it.toRelativeString(rootProject.projectDir))
 }
