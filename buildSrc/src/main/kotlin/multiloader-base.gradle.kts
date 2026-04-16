@@ -9,6 +9,7 @@ plugins {
 
 base.archivesName = "${resolveProperty("mod_id")}-${project.name}"
 group = resolveProperty("mod_group")
+project.extra["mod_version"] = "${resolveProperty("mod_version")}.${resolveProperty("mod_version_patch")}"
 version = "${resolveProperty("mod_version")}+${resolveProperty("vanillaMinecraft")}"
 
 java {
