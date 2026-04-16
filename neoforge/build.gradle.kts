@@ -47,58 +47,79 @@ fun computeNextVersion(version: String, to: VersionPart = VersionPart.MINOR): St
     return "${versionComponents.joinToString(".")}.${toUpdate + 1}"
 }
 
-internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
-    // Base toml
-    val modsToml = TomlTable.create()
-    modsToml["license"] = resolveProperty("mod_license")
+fun generateModFile(name: String = "", dependsOn: TomlTable? = null): TaskProvider<Task> {
+    return tasks.register("generate${if (name.isEmpty()) "" else name.replaceFirstChar { it.uppercase() }}ModFile") {
+        // Base toml
+        val modsToml = TomlTable.create()
+        modsToml["license"] = resolveProperty("mod_license")
 
-    // Mod entries
-    val mods = TomlArray.create()
-    modsToml["mods"] = mods
+        // Mod entries
+        val mods = TomlArray.create()
+        modsToml["mods"] = mods
 
-    // Mod
-    val mod = TomlTable.create()
-    mod["modId"] = resolveProperty("mod_id")
-    mod["version"] = resolveProperty("mod_version")
-    mod["displayName"] = resolveProperty("mod_name")
-    mod["authors"] = resolveProperty("mod_authors")
-    mod["description"] = resolveProperty("mod_description")
-    mods.add(mod)
+        // Mod
+        val modId = "${resolveProperty("mod_id")}${if (name.isEmpty()) "" else "_${name}"}"
+        val mod = TomlTable.create()
+        mod["modId"] = modId
+        mod["version"] = resolveProperty("mod_version")
+        mod["displayName"] = "${resolveProperty("mod_name")} (${project.name}${if (name.isEmpty()) "" else "-${name}"})"
+        mod["authors"] = resolveProperty("mod_authors")
+        mod["description"] = resolveProperty("mod_description")
+        mods.add(mod)
 
-    // Mod dependencies
-    val modDependencies = TomlArray.create()
-    modsToml["dependencies.${resolveProperty("mod_id")}"] = modDependencies
+        // Mod dependencies
+        val modDependencies = TomlArray.create()
+        modsToml["dependencies.${modId}"] = modDependencies
 
-    // Minecraft dependency
-    val minecraft = TomlTable.create()
-    minecraft["modId"] = "minecraft"
-    minecraft["type"] = "required"
-    minecraft["versionRange"] = "[${resolveProperty("vanillaMinecraft")},${computeNextVersion(resolveProperty("vanillaMinecraft"))})"
-    minecraft["ordering"] = "AFTER"
-    minecraft["side"] = "BOTH"
-    modDependencies.add(minecraft)
+        // Minecraft dependency
+        val minecraft = TomlTable.create()
+        minecraft["modId"] = "minecraft"
+        minecraft["type"] = "required"
+        minecraft["versionRange"] = "[${resolveProperty("vanillaMinecraft")},${computeNextVersion(resolveProperty("vanillaMinecraft"))})"
+        minecraft["ordering"] = "AFTER"
+        minecraft["side"] = "BOTH"
+        modDependencies.add(minecraft)
 
-    // NeoForge dependency
-    val neoForge = TomlTable.create()
-    neoForge["modId"] = "neoforge"
-    neoForge["type"] = "required"
-    neoForge["versionRange"] = "[${resolveProperty("neoforgeApi")},${computeNextVersion(resolveProperty("neoforgeApi"))})"
-    neoForge["ordering"] = "AFTER"
-    neoForge["side"] = "BOTH"
-    modDependencies.add(neoForge)
+        // NeoForge dependency
+        val neoForge = TomlTable.create()
+        neoForge["modId"] = "neoforge"
+        neoForge["type"] = "required"
+        neoForge["versionRange"] = "[${resolveProperty("neoforgeApi")},${computeNextVersion(resolveProperty("neoforgeApi"))})"
+        neoForge["ordering"] = "AFTER"
+        neoForge["side"] = "BOTH"
+        modDependencies.add(neoForge)
 
-    // Write to file
-    val outputDir: File = layout.buildDirectory.asFile.get().resolve("generated/sources/mod_file")
-    val filePath: File = outputDir.resolve("META-INF/neoforge.mods.toml")
-    Files.createDirectories(filePath.parentFile.toPath())
-    FileWriter(filePath, StandardCharsets.UTF_8).use { KToml.write(it, modsToml) }
-    outputs.dir(outputDir)
+        // Additional dependency
+        if (dependsOn != null) {
+            modDependencies.add(dependsOn)
+        }
+
+        // Write to file
+        val outputDir: File = layout.buildDirectory.asFile.get().resolve("generated/sources/mod_file/${if (name.isEmpty()) "main" else name}")
+        val filePath: File = outputDir.resolve("META-INF/neoforge.mods.toml")
+        Files.createDirectories(filePath.parentFile.toPath())
+        FileWriter(filePath, StandardCharsets.UTF_8).use { KToml.write(it, modsToml) }
+        outputs.dir(outputDir)
+    }
 }
+
+internal val modFile = generateModFile()
+internal val dataModFile = generateModFile("data", TomlTable.create().apply {
+    this["modId"] = resolveProperty("mod_id")
+    this["type"] = "required"
+    this["versionRange"] = "[${resolveProperty("mod_version")},${computeNextVersion(resolveProperty("mod_version"))})"
+    this["ordering"] = "AFTER"
+    this["side"] = "BOTH"
+})
 
 client.resources {
     srcDir(modFile)
     source(generated.resources)
     exclude("./cache")
+}
+
+data.resources {
+    srcDir(dataModFile)
 }
 
 neoForge {
@@ -109,6 +130,8 @@ neoForge {
 
     mods.create(resolveProperty("mod_id")) {
         sourceSet(client)
+    }
+    mods.create("${resolveProperty("mod_id")}_data") {
         sourceSet(data)
     }
 

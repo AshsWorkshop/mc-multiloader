@@ -39,38 +39,53 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")
 }
 
-internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
-    // Base json
-    val modsJson: Map<String, Any> = mapOf(
-        "schemaVersion" to 1,
-        "id" to resolveProperty("mod_id"),
-        "version" to resolveProperty("mod_version"),
-        "name" to "${resolveProperty("mod_name")} (${project.name})",
-        "description" to resolveProperty("mod_description"),
-        "authors" to resolveProperty("mod_authors").split(",").map { it.trim() },
-        "license" to resolveProperty("mod_license"),
-        "environment" to "*",
-        "entrypoints" to mapOf<String, List<String>>(),
-        "mixins" to listOf<String>(),
-        "depends" to mapOf(
+fun generateModFile(name: String = "", dependsOn: Pair<String, String>? = null): TaskProvider<Task> {
+    return tasks.register("generate${if (name.isEmpty()) "" else name.replaceFirstChar { it.uppercase() }}ModFile") {
+        // Dependencies
+        val dependencies = mutableMapOf(
             "java" to resolveProperty("javaVersion"),
             "minecraft" to "~${resolveProperty("vanillaMinecraft")}",
             "fabricloader" to ">=${resolveProperty("fabricLoader")}",
             "fabric-api" to ">=${resolveProperty("fabricApi")}"
         )
-    )
+        if (dependsOn != null) {
+            dependencies[dependsOn.first] = dependsOn.second
+        }
 
-    val outputDir: File = layout.buildDirectory.asFile.get().resolve("generated/sources/mod_file")
-    val filePath: File = outputDir.resolve("fabric.mod.json")
-    Files.createDirectories(filePath.parentFile.toPath())
-    FileWriter(filePath, StandardCharsets.UTF_8).use { it.write(JsonOutput.prettyPrint(JsonOutput.toJson(modsJson))) }
-    outputs.dir(outputDir)
+        // Base json
+        val modsJson: Map<String, Any> = mapOf(
+            "schemaVersion" to 1,
+            "id" to "${resolveProperty("mod_id")}${if (name.isEmpty()) "" else "_${name}"}",
+            "version" to resolveProperty("mod_version"),
+            "name" to "${resolveProperty("mod_name")} (${project.name}${if (name.isEmpty()) "" else "-${name}"})",
+            "description" to resolveProperty("mod_description"),
+            "authors" to resolveProperty("mod_authors").split(",").map { it.trim() },
+            "license" to resolveProperty("mod_license"),
+            "environment" to "*",
+            "entrypoints" to mapOf<String, List<String>>(),
+            "mixins" to listOf<String>(),
+            "depends" to dependencies
+        )
+
+        val outputDir: File = layout.buildDirectory.asFile.get().resolve("generated/sources/mod_file/${if (name.isEmpty()) "main" else name}")
+        val filePath: File = outputDir.resolve("fabric.mod.json")
+        Files.createDirectories(filePath.parentFile.toPath())
+        FileWriter(filePath, StandardCharsets.UTF_8).use { it.write(JsonOutput.prettyPrint(JsonOutput.toJson(modsJson))) }
+        outputs.dir(outputDir)
+    }
 }
+
+internal val modFile = generateModFile()
+internal val dataModFile = generateModFile("data", Pair(resolveProperty("mod_id"), "~${resolveProperty("mod_version")}"))
 
 client.resources {
     srcDir(modFile)
     source(generated.resources)
     exclude("./cache")
+}
+
+data.resources {
+    srcDir(dataModFile)
 }
 
 tasks.withType<IdeaSyncTask>().forEach {
