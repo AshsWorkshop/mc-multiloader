@@ -16,7 +16,7 @@ internal val data: SourceSet = sourceSets.createFrom("data", base, base)
 
 neoForge {
     // Configure vanilla mode
-    neoFormVersion = rootProperty("vanillaNeoform")
+    neoFormVersion = resolveProperty("vanillaNeoform")
 }
 
 var jar = publishSourceSets(
@@ -27,7 +27,7 @@ publishSourceSets(
     "${project.name}Data", listOf(data),
     "${project.base.archivesName.get()}-data"
 ) {
-    name = "${rootProperty("mod_name")} (${project.name}-data)"
+    name = "${resolveProperty("mod_name")} (${project.name}-data)"
 
     // Need to manually resolve dependency due to source set shenanigans
     dependency(jar)

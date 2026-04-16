@@ -34,29 +34,29 @@ internal val generated: SourceSet = sourceSets.create("generated") {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${rootProperty("vanillaMinecraft")}")
-    implementation("net.fabricmc:fabric-loader:${rootProperty("fabricLoader")}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${rootProperty("fabricApi")}")
+    minecraft("com.mojang:minecraft:${resolveProperty("vanillaMinecraft")}")
+    implementation("net.fabricmc:fabric-loader:${resolveProperty("fabricLoader")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")
 }
 
 internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
     // Base json
     val modsJson: Map<String, Any> = mapOf(
         "schemaVersion" to 1,
-        "id" to rootProperty("mod_id"),
-        "version" to rootProperty("mod_version"),
-        "name" to "${rootProperty("mod_name")} (${project.name})",
-        "description" to rootProperty("mod_description"),
-        "authors" to rootProperty("mod_authors").split(",").map { it.trim() },
-        "license" to rootProperty("mod_license"),
+        "id" to resolveProperty("mod_id"),
+        "version" to resolveProperty("mod_version"),
+        "name" to "${resolveProperty("mod_name")} (${project.name})",
+        "description" to resolveProperty("mod_description"),
+        "authors" to resolveProperty("mod_authors").split(",").map { it.trim() },
+        "license" to resolveProperty("mod_license"),
         "environment" to "*",
         "entrypoints" to mapOf<String, List<String>>(),
         "mixins" to listOf<String>(),
         "depends" to mapOf(
-            "java" to rootProperty("javaVersion"),
-            "minecraft" to "~${rootProperty("vanillaMinecraft")}",
-            "fabricloader" to ">=${rootProperty("fabricLoader")}",
-            "fabric-api" to ">=${rootProperty("fabricApi")}"
+            "java" to resolveProperty("javaVersion"),
+            "minecraft" to "~${resolveProperty("vanillaMinecraft")}",
+            "fabricloader" to ">=${resolveProperty("fabricLoader")}",
+            "fabric-api" to ">=${resolveProperty("fabricApi")}"
         )
     )
 

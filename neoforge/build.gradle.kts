@@ -50,7 +50,7 @@ fun computeNextVersion(version: String, to: VersionPart = VersionPart.MINOR): St
 internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
     // Base toml
     val modsToml = TomlTable.create()
-    modsToml["license"] = rootProperty("mod_license")
+    modsToml["license"] = resolveProperty("mod_license")
 
     // Mod entries
     val mods = TomlArray.create()
@@ -58,22 +58,22 @@ internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
 
     // Mod
     val mod = TomlTable.create()
-    mod["modId"] = rootProperty("mod_id")
-    mod["version"] = rootProperty("mod_version")
-    mod["displayName"] = rootProperty("mod_name")
-    mod["authors"] = rootProperty("mod_authors")
-    mod["description"] = rootProperty("mod_description")
+    mod["modId"] = resolveProperty("mod_id")
+    mod["version"] = resolveProperty("mod_version")
+    mod["displayName"] = resolveProperty("mod_name")
+    mod["authors"] = resolveProperty("mod_authors")
+    mod["description"] = resolveProperty("mod_description")
     mods.add(mod)
 
     // Mod dependencies
     val modDependencies = TomlArray.create()
-    modsToml["dependencies.${rootProperty("mod_id")}"] = modDependencies
+    modsToml["dependencies.${resolveProperty("mod_id")}"] = modDependencies
 
     // Minecraft dependency
     val minecraft = TomlTable.create()
     minecraft["modId"] = "minecraft"
     minecraft["type"] = "required"
-    minecraft["versionRange"] = "[${rootProperty("vanillaMinecraft")},${computeNextVersion(rootProperty("vanillaMinecraft"))})"
+    minecraft["versionRange"] = "[${resolveProperty("vanillaMinecraft")},${computeNextVersion(resolveProperty("vanillaMinecraft"))})"
     minecraft["ordering"] = "AFTER"
     minecraft["side"] = "BOTH"
     modDependencies.add(minecraft)
@@ -82,7 +82,7 @@ internal val modFile: TaskProvider<Task> = tasks.register("generateModFile") {
     val neoForge = TomlTable.create()
     neoForge["modId"] = "neoforge"
     neoForge["type"] = "required"
-    neoForge["versionRange"] = "[${rootProperty("neoforgeApi")},${computeNextVersion(rootProperty("neoforgeApi"))})"
+    neoForge["versionRange"] = "[${resolveProperty("neoforgeApi")},${computeNextVersion(resolveProperty("neoforgeApi"))})"
     neoForge["ordering"] = "AFTER"
     neoForge["side"] = "BOTH"
     modDependencies.add(neoForge)
@@ -102,12 +102,12 @@ client.resources {
 }
 
 neoForge {
-    version = rootProperty("neoforgeApi")
+    version = resolveProperty("neoforgeApi")
 
     // Sync tasks
     ideSyncTask(modFile)
 
-    mods.create(rootProperty("mod_id")) {
+    mods.create(resolveProperty("mod_id")) {
         sourceSet(client)
         sourceSet(data)
     }
@@ -125,7 +125,7 @@ neoForge {
         }
         create("clientData") {
             clientData()
-            programArguments.addAll("--mod", rootProperty("mod_id"), "--all", "--output", generated.resources.srcDirs.first().absolutePath)
+            programArguments.addAll("--mod", resolveProperty("mod_id"), "--all", "--output", generated.resources.srcDirs.first().absolutePath)
             client.resources.srcDirs.forEach { programArguments.addAll("--existing", it.absolutePath) }
         }
 
@@ -134,7 +134,7 @@ neoForge {
             logLevel = org.slf4j.event.Level.DEBUG
         }
         named { !it.lowercase(Locale.ROOT).contains("data") }.configureEach {
-            systemProperty("neoforge.enabledGameTestNamespaces", rootProperty("mod_id"))
+            systemProperty("neoforge.enabledGameTestNamespaces", resolveProperty("mod_id"))
         }
     }
 }

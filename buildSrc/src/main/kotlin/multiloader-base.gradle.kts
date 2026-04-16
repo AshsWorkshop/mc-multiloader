@@ -1,5 +1,5 @@
 import groovy.json.JsonSlurper
-import net.ashwork.gradle.multiloader.rootProperty
+import net.ashwork.gradle.multiloader.resolveProperty
 
 plugins {
     java
@@ -8,14 +8,14 @@ plugins {
     `maven-publish`
 }
 
-base.archivesName = "${rootProperty("mod_id")}-${project.name}"
-group = rootProperty("mod_group")
-version = "${rootProperty("mod_version")}+${rootProperty("vanillaMinecraft")}"
+base.archivesName = "${resolveProperty("mod_id")}-${project.name}"
+group = resolveProperty("mod_group")
+version = "${resolveProperty("mod_version")}+${resolveProperty("vanillaMinecraft")}"
 
 java {
     withSourcesJar()
     toolchain.languageVersion.set(
-        JavaLanguageVersion.of(rootProperty("javaVersion"))
+        JavaLanguageVersion.of(resolveProperty("javaVersion"))
     )
 }
 
@@ -29,8 +29,8 @@ idea.module {
 }
 
 download.run {
-    src("https://raw.githubusercontent.com/spdx/license-list-data/main/json/details/${rootProperty("mod_license")}.json")
-    dest(rootProject.layout.buildDirectory.asFile.get().resolve("licenses/${rootProperty("mod_license")}.json"))
+    src("https://raw.githubusercontent.com/spdx/license-list-data/main/json/details/${resolveProperty("mod_license")}.json")
+    dest(rootProject.layout.buildDirectory.asFile.get().resolve("licenses/${resolveProperty("mod_license")}.json"))
     onlyIfModified(true)
 }
 
@@ -50,28 +50,28 @@ fun fromLicenseShortcode(shortcode: String): Action<MavenPomLicense> {
 
 publishing.publications.withType<MavenPublication>().configureEach {
     pom {
-        name = "${rootProperty("mod_name")} (${project.name})"
-        description = rootProperty("mod_description")
-        url = "https://${rootProperty("mod_repository")}"
+        name = "${resolveProperty("mod_name")} (${project.name})"
+        description = resolveProperty("mod_description")
+        url = "https://${resolveProperty("mod_repository")}"
         licenses {
-            license(fromLicenseShortcode(rootProperty("mod_license")))
+            license(fromLicenseShortcode(resolveProperty("mod_license")))
         }
         issueManagement {
-            url = "https://${rootProperty("mod_repository")}/issues"
-            system = rootProperty("mod_issue_system")
+            url = "https://${resolveProperty("mod_repository")}/issues"
+            system = resolveProperty("mod_issue_system")
         }
         developers {
-            rootProperty("mod_authors").split(",").forEach {
+            resolveProperty("mod_authors").split(",").forEach {
                 developer {
                     name = it.trim()
-                    organization = rootProperty("mod_organization")
+                    organization = resolveProperty("mod_organization")
                 }
             }
         }
         scm {
-            connection = "scm:git:git://${rootProperty("mod_repository")}.git"
-            developerConnection = "scm:git:ssh://${rootProperty("mod_repository")}.git"
-            url = "https://${rootProperty("mod_repository")}"
+            connection = "scm:git:git://${resolveProperty("mod_repository")}.git"
+            developerConnection = "scm:git:ssh://${resolveProperty("mod_repository")}.git"
+            url = "https://${resolveProperty("mod_repository")}"
         }
     }
 }

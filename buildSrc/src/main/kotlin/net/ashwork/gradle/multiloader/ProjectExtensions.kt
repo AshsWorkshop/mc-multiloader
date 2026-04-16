@@ -4,9 +4,11 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.extra
-import kotlin.collections.plusAssign
 
-fun Project.rootProperty(name: String): String = rootProject.extra[name].toString()
+fun Project.resolveProperty(name: String): String {
+    if (project.extra.has(name)) return project.extra[name].toString()
+    return rootProject.extra[name].toString()
+}
 
 fun SourceSetContainer.createFrom(name: String, withClasspath: SourceSet, vararg withOutputs: SourceSet): SourceSet {
     return this.create(name) {
