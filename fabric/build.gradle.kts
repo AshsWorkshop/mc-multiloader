@@ -100,3 +100,25 @@ fabricApi.configureDataGeneration {
     createRunConfiguration = true
     outputDirectory = generated.resources.srcDirs.first()
 }
+
+afterEvaluate {
+    var jar = publishSourceSets(
+        project.name, listOf(
+            sourceSets["base"], common, client,
+            api.sourceSets["base"], api.sourceSets["common"], api.sourceSets["client"]
+        ),
+        project.base.archivesName.get()
+    ) {
+        runtimeDependency(configurations.compileClasspath) { it in listOf("fabric-loader", "fabric-api") }
+    }
+    publishSourceSets(
+        "${project.name}Data", listOf(data, api.sourceSets["data"]),
+        "${project.base.archivesName.get()}-data"
+    ) {
+        name = "${resolveProperty("mod_name")} (${project.name}-data)"
+
+        // Need to manually resolve dependency due to source set shenanigans
+        compileDependency(jar)
+        runtimeDependency(configurations.compileClasspath) { it in listOf("fabric-loader", "fabric-api") }
+    }
+}

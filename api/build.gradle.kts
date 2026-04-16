@@ -19,16 +19,18 @@ neoForge {
     neoFormVersion = resolveProperty("vanillaNeoform")
 }
 
-var jar = publishSourceSets(
-    project.name, listOf(base, common, client),
-    project.base.archivesName.get()
-)
-publishSourceSets(
-    "${project.name}Data", listOf(data),
-    "${project.base.archivesName.get()}-data"
-) {
-    name = "${resolveProperty("mod_name")} (${project.name}-data)"
+afterEvaluate {
+    var jar = publishSourceSets(
+        project.name, listOf(sourceSets["base"], common, client),
+        project.base.archivesName.get()
+    )
+    publishSourceSets(
+        "${project.name}Data", listOf(data),
+        "${project.base.archivesName.get()}-data"
+    ) {
+        name = "${resolveProperty("mod_name")} (${project.name}-data)"
 
-    // Need to manually resolve dependency due to source set shenanigans
-    dependency(jar)
+        // Need to manually resolve dependency due to source set shenanigans
+        compileDependency(jar)
+    }
 }
