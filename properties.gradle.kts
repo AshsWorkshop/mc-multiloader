@@ -19,4 +19,3 @@ val fabricLoom by extra("1.16-SNAPSHOT")
 val fabricApi by extra("0.145.4+${vanillaMinecraft}")
 
 val rootProperty by extra({ name: String -> rootProject.extra[name].toString() })
-val resolveProject by extra({ module: String, lib: String -> rootProject.project(":${module}:${module}-${lib}") })
