@@ -31,6 +31,6 @@ afterEvaluate {
         name = "${resolveProperty("mod_name")} (${project.name}-data)"
 
         // Need to manually resolve dependency due to source set shenanigans
-        compileDependency(jar)
+        dependencies { compile(jar) }
     }
 }

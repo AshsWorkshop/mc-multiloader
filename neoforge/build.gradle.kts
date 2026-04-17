@@ -170,7 +170,7 @@ afterEvaluate {
         ),
         project.base.archivesName.get()
     ) {
-        runtimeDependency(configurations.compileClasspath) { it in listOf("neoforge") }
+        dependencies { runtime(configurations.compileClasspath) { it in listOf("neoforge") } }
     }
     publishSourceSets(
         "${project.name}Data", listOf(data, api.sourceSets["data"]),
@@ -179,7 +179,9 @@ afterEvaluate {
         name = "${resolveProperty("mod_name")} (${project.name}-data)"
 
         // Need to manually resolve dependency due to source set shenanigans
-        compileDependency(jar)
-        runtimeDependency(configurations.compileClasspath) { it in listOf("neoforge") }
+        dependencies {
+            compile(jar)
+            runtime(configurations.compileClasspath) { it in listOf("neoforge") }
+        }
     }
 }

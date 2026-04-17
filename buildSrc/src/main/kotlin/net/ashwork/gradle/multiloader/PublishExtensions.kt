@@ -1,12 +1,12 @@
 package net.ashwork.gradle.multiloader
 
-import groovy.lang.Closure
 import groovy.namespace.QName
 import groovy.util.Node
 import groovy.util.NodeList
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
+import org.gradle.api.XmlProvider
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.publish.PublishingExtension
@@ -67,48 +67,64 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
     return artifacts[0]
 }
 
-fun MavenPom.compileDependency(configuration: NamedDomainObjectProvider<Configuration>, matches: (String) -> Boolean) {
-    dependency(configuration, "compile", matches)
-}
+fun interface DependencyProvider {
 
-fun MavenPom.compileDependency(artifact: TaskProvider<Jar>) {
-    dependency(artifact, "compile")
-}
+    fun dependencyList(): Node
 
-fun MavenPom.runtimeDependency(configuration: NamedDomainObjectProvider<Configuration>, matches: (String) -> Boolean) {
-    dependency(configuration, "runtime", matches)
-}
-
-fun MavenPom.runtimeDependency(artifact: TaskProvider<Jar>) {
-    dependency(artifact, "runtime")
-}
-
-fun MavenPom.dependency(configuration: NamedDomainObjectProvider<Configuration>, scope: String, matches: (String) -> Boolean) {
-    dependency(configuration.get(), scope, matches)
-}
-
-fun MavenPom.dependency(configuration: Configuration, scope: String, matches: (String) -> Boolean) {
-    configuration.resolvedConfiguration.resolvedArtifacts.filter { matches(it.name) }.forEach {
-        dependency(it, scope)
+    fun compile(configuration: NamedDomainObjectProvider<Configuration>, matches: (String) -> Boolean) {
+        dependency(configuration, "compile", matches)
     }
-}
 
-fun MavenPom.dependency(artifact: ResolvedArtifact, scope: String) {
-    dependency(artifact.moduleVersion.id.group, artifact.name, artifact.moduleVersion.id.version, scope)
-}
+    fun compile(artifact: TaskProvider<Jar>) {
+        dependency(artifact, "compile")
+    }
 
-fun MavenPom.dependency(artifact: TaskProvider<Jar>, scope: String) {
-    val jar = artifact.get()
-    dependency(jar.group!!, jar.archiveBaseName.get(), jar.archiveVersion.get(), scope)
-}
+    fun runtime(configuration: NamedDomainObjectProvider<Configuration>, matches: (String) -> Boolean) {
+        dependency(configuration, "runtime", matches)
+    }
 
-fun MavenPom.dependency(groupId: String, artifactId: String, version: String, scope: String) {
-    withXml {
-        val dependencies: Node = if (asNode().getAt(QName("dependencies")).isNotEmpty()) asNode().getAt(QName("dependencies"))[0] as Node else asNode().appendNode("dependencies")
-        val dependency = dependencies.appendNode("dependency")
+    fun runtime(artifact: TaskProvider<Jar>) {
+        dependency(artifact, "runtime")
+    }
+
+    fun dependency(configuration: NamedDomainObjectProvider<Configuration>, scope: String, matches: (String) -> Boolean) {
+        dependency(configuration.get(), scope, matches)
+    }
+
+    fun dependency(configuration: Configuration, scope: String, matches: (String) -> Boolean) {
+        configuration.resolvedConfiguration.resolvedArtifacts.filter { matches(it.name) }.forEach {
+            dependency(it, scope)
+        }
+    }
+
+    fun dependency(artifact: ResolvedArtifact, scope: String) {
+        dependency(artifact.moduleVersion.id.group, artifact.name, artifact.moduleVersion.id.version, scope)
+    }
+
+    fun dependency(artifact: TaskProvider<Jar>, scope: String) {
+        val jar = artifact.get()
+        dependency(jar.group!!, jar.archiveBaseName.get(), jar.archiveVersion.get(), scope)
+    }
+
+    fun dependency(groupId: String, artifactId: String, version: String, scope: String? = null) {
+        val dependency = this.dependencyList().appendNode("dependency")
         dependency.appendNode("groupId", groupId)
         dependency.appendNode("artifactId", artifactId)
         dependency.appendNode("version", version)
-        dependency.appendNode("scope", scope)
+        if (scope != null) dependency.appendNode("scope", scope)
     }
 }
+
+fun MavenPom.dependencies(configure: Action<DependencyProvider>) {
+    withXml {
+        configure.execute { asNode().getOrCreate("dependencies") }
+    }
+}
+
+fun MavenPom.dependencyManagement(configure: Action<DependencyProvider>) {
+    withXml {
+        configure.execute { asNode().getOrCreate("dependencyManagement").getOrCreate("dependencies") }
+    }
+}
+
+fun Node.getOrCreate(name: String): Node = if (this.getAt(QName(name)).isNotEmpty()) this.getAt(QName(name))[0] as Node else this.appendNode(name)
