@@ -32,31 +32,44 @@ fun fromLicenseShortcode(shortcode: String): Action<MavenPomLicense> {
     }
 }
 
-publishing.publications.withType<MavenPublication>().configureEach {
-    pom {
-        name = "${resolveProperty("mod_name")} (${project.name})"
-        description = resolveProperty("mod_description")
-        url = "https://${resolveProperty("mod_repository")}"
-        licenses {
-            license(fromLicenseShortcode(resolveProperty("mod_license")))
-        }
-        issueManagement {
-            url = "https://${resolveProperty("mod_repository")}/issues"
-            system = resolveProperty("mod_issue_system")
-        }
-        developers {
-            resolveProperty("mod_authors").split(",").forEach {
-                developer {
-                    name = it.trim()
-                    organization = resolveProperty("mod_organization")
-                }
+publishing {
+    repositories {
+        maven {
+            name = "GitHub"
+            url = uri("https://maven.pkg.${resolveProperty("mod_repository")}")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
-        scm {
-            connection = "scm:git:git://${resolveProperty("mod_repository")}.git"
-            developerConnection = "scm:git:ssh://${resolveProperty("mod_repository")}.git"
+    }
+
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name = "${resolveProperty("mod_name")} (${project.name})"
+            description = resolveProperty("mod_description")
             url = "https://${resolveProperty("mod_repository")}"
-            tag = "git rev-parse --verify HEAD".runCommand(workingDir = rootProject.rootDir)
+            licenses {
+                license(fromLicenseShortcode(resolveProperty("mod_license")))
+            }
+            issueManagement {
+                url = "https://${resolveProperty("mod_repository")}/issues"
+                system = resolveProperty("mod_issue_system")
+            }
+            developers {
+                resolveProperty("mod_authors").split(",").forEach {
+                    developer {
+                        name = it.trim()
+                        organization = resolveProperty("mod_organization")
+                    }
+                }
+            }
+            scm {
+                connection = "scm:git:git://${resolveProperty("mod_repository")}.git"
+                developerConnection = "scm:git:ssh://${resolveProperty("mod_repository")}.git"
+                url = "https://${resolveProperty("mod_repository")}"
+                tag = "git rev-parse --verify HEAD".runCommand(workingDir = rootProject.rootDir)
+            }
         }
     }
 }
