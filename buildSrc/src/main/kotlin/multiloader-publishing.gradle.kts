@@ -1,5 +1,5 @@
 import groovy.json.JsonSlurper
-import net.ashwork.gradle.multiloader.resolveProperty
+import net.ashwork.gradle.multiloader.*
 import org.gradle.api.Action
 import org.gradle.api.publish.maven.MavenPomLicense
 import org.gradle.api.publish.maven.MavenPublication
@@ -56,6 +56,7 @@ publishing.publications.withType<MavenPublication>().configureEach {
             connection = "scm:git:git://${resolveProperty("mod_repository")}.git"
             developerConnection = "scm:git:ssh://${resolveProperty("mod_repository")}.git"
             url = "https://${resolveProperty("mod_repository")}"
+            tag = "git rev-parse --verify HEAD".runCommand(workingDir = rootProject.rootDir)
         }
     }
 }
