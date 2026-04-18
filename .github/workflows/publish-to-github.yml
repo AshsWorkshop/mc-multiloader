@@ -20,6 +20,7 @@ jobs:
     steps:
       - name: Validate publishing
         id: validate
+        shell: bash
         run: |
           # Should be at start of message: 'feat(push[<>]): <message>'
           if (echo ${{ github.event.head_commit.message }} | grep -qP '^[^\(\)]+\([^\(\)]*push(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$'); then
@@ -59,6 +60,7 @@ jobs:
 
         - name: Extract Java version
           id: extract_java
+          shell: bash
           run: echo "java_version=$(grep 'java_version' gradle.properties | awk -F= '{$2=$2;print $2}')" >> $GITHUB_OUTPUT
 
         - name: Setup Java
@@ -73,6 +75,7 @@ jobs:
             cache-provider: basic
 
         - name: Publish package
+          shell: bash
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
@@ -114,6 +117,7 @@ jobs:
           run: ./gradlew :platform:publish
 
         - name: Bump platform version
+          shell: bash
           run: |
             # Bump build version
             mod_build=$(grep 'mod_version_build' platform/gradle.properties | awk -F= '{$2=$2;print $2}')
@@ -121,6 +125,7 @@ jobs:
             sed -i "s/mod_version_build=.*/mod_version_build=$mod_build/" platform/gradle.properties
 
         - name: Commit versions and push branch
+          shell: bash
           run: |
             if [ -n "$(git status --porcelain)" ]; then
               # Setup user settings
