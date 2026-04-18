@@ -1,4 +1,4 @@
-package net.ashwork.mc.multiloader.api.base.impl;
+package net.ashwork.mc.multiloader.api.base.impl.extension;
 
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;

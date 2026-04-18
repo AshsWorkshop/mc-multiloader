@@ -2,6 +2,7 @@ package net.ashwork.mc.multiloader.api.base.impl;
 
 import net.ashwork.mc.multiloader.api.base.ModLoader;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
+import net.ashwork.mc.multiloader.api.base.impl.extension.AbstractExtensionHolder;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

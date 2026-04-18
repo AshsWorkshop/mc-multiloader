@@ -1,4 +1,4 @@
-package net.ashwork.mc.multiloader.api.base.impl;
+package net.ashwork.mc.multiloader.api.base.impl.extension;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ElementOrder;

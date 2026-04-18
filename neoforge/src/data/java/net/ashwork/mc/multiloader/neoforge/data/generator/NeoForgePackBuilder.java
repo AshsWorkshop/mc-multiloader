@@ -1,8 +1,6 @@
 package net.ashwork.mc.multiloader.neoforge.data.generator;
 
-import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
-import net.ashwork.mc.multiloader.api.base.impl.AbstractExtensionHolder;
-import net.ashwork.mc.multiloader.api.base.impl.ExtensionManager;
+import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
 import net.minecraft.core.HolderLookup;
@@ -11,9 +9,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
-import org.jspecify.annotations.Nullable;
 
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

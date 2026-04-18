@@ -1,9 +1,8 @@
 package net.ashwork.mc.multiloader.neoforge.data.generator;
 
-import net.ashwork.mc.multiloader.api.base.impl.ExtensionManager;
+import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
 import net.ashwork.mc.multiloader.api.data.generator.PackFactory;
-import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
