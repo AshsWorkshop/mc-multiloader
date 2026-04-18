@@ -1,5 +1,6 @@
 package net.ashwork.mc.multiloader.api;
 
+import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -13,12 +14,13 @@ public interface Multiloader {
     String ID = "ashsmultiloader";
 
     /**
-     * Creates an {@link Identifier} for the multiloader.
+     * Creates a {@link LoaderExtension.Key} for the multiloader.
      *
      * @param path The path of the identifier.
-     * @return An {@link Identifier}.
+     * @return A {@link LoaderExtension.Key}.
+     * @param <API> The type of the API.
      */
-    static Identifier withId(String path) {
-        return Identifier.fromNamespaceAndPath(ID, path);
+    static <API> LoaderExtension.Key<API> extension(String path) {
+        return new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath(ID, path));
     }
 }

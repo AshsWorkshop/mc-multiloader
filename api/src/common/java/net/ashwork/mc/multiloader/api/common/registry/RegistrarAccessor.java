@@ -17,7 +17,7 @@ public interface RegistrarAccessor {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
-    LoaderExtension.Key<RegistrarAccessor> EXT = new LoaderExtension.Key<>(Multiloader.withId("registrar_accessor"));
+    LoaderExtension.Key<RegistrarAccessor> EXT = Multiloader.extension("registrar_accessor");
 
     /**
      * Creates a registrar to register registry objects to
