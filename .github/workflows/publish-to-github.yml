@@ -10,6 +10,7 @@ jobs:
     name: Check if packages should be published
     runs-on: ubuntu-latest
     # Run only if commit message contains 'push[<comma-separated list of subprojects to bump>]'
+    # Should be at start of message: 'feat(push[<>]): <message>'
 
     # Since no regex is supported on the tag, we check contains first
     if: contains(github.event.head_commit.message, 'push')
@@ -22,7 +23,6 @@ jobs:
         id: validate
         shell: bash
         run: |
-          # Should be at start of message: 'feat(push[<>]): <message>'
           if (echo ${{ github.event.head_commit.message }} | grep -qP '^[^\(\)]+\([^\(\)]*push(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$'); then
             # Get packages to output, or 'all' if none is specified
             groups=$(echo ${{ github.event.head_commit.message }} | perl -ne 'print $1 if /^[^\(\)]+\([^\(\)]*push(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$/')
@@ -79,7 +79,6 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
-            # Loop through each project
             for project in $(echo ${{ needs.check-publish.outputs.publish_packages }} | tr ',' '\n'); do
               # Check if should publish all publications
               if [[ $project = 'all' ]]; then
@@ -119,7 +118,6 @@ jobs:
         - name: Bump platform version
           shell: bash
           run: |
-            # Bump build version
             mod_build=$(grep 'mod_version_build' platform/gradle.properties | awk -F= '{$2=$2;print $2}')
             mod_build=$(($mod_build + 1))
             sed -i "s/mod_version_build=.*/mod_version_build=$mod_build/" platform/gradle.properties
