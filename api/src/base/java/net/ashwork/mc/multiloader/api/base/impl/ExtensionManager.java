@@ -1,6 +1,10 @@
 package net.ashwork.mc.multiloader.api.base.impl;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.graph.ElementOrder;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.Graphs;
+import com.google.common.graph.MutableGraph;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
@@ -43,7 +47,7 @@ public final class ExtensionManager implements ExtensionHolder {
     @Override
     public <API> API access(LoaderExtension.Key<API> extension) throws IllegalArgumentException {
         if (this.extensions.containsKey(extension)) {
-            return (API) this.extensions.get(extension);
+            return (API) this.extensions.get(extension).access(this);
         }
 
         throw new IllegalArgumentException("Extension '" + extension + "' is not implemented on the current holder");
@@ -52,25 +56,38 @@ public final class ExtensionManager implements ExtensionHolder {
     @Override
     public <API> void accessIfPresent(LoaderExtension.Key<API> extension, Consumer<API> ifPresent) {
         if (this.extensions.containsKey(extension)){
-            ifPresent.accept((API) this.extensions.get(extension));
+            ifPresent.accept((API) this.extensions.get(extension).access(this));
         }
     }
 
     private static final class Builder implements ExtensionRegistrar {
 
         private final ImmutableMap.Builder<LoaderExtension.Key<?>, LoaderExtension<?>> builder;
+        private final MutableGraph<LoaderExtension.Key<?>> graph = GraphBuilder.directed().nodeOrder(ElementOrder.insertion()).build();
 
         private Builder() {
             this.builder = ImmutableMap.builder();
         }
 
         @Override
-        public <API> void provide(LoaderExtension.Key<API> id, LoaderExtension<API> extension) {
+        public <API> void provide(LoaderExtension.Key<API> id, LoaderExtension<API> extension, LoaderExtension.Key<?> dependency, LoaderExtension.Key<?>... dependencies) {
             this.builder.put(id, extension);
+            this.graph.addNode(id);
+            this.graph.putEdge(dependency, id);
+            for (var dep : dependencies) this.graph.putEdge(dep, id);
+        }
+
+        @Override
+        public <API> void provide(LoaderExtension.Key<API> id, LoaderExtension.WithoutHolder<API> extension) {
+            this.builder.put(id, holder -> extension.access());
         }
 
         private ExtensionManager build() {
+            if (Graphs.hasCycle(this.graph)) {
+                throw new IllegalStateException("The extension graph contains a cycle.");
+            }
             return new ExtensionManager(this.builder.buildOrThrow());
         }
+
     }
 }

@@ -15,9 +15,27 @@ public interface LoaderExtension<API> {
     /**
      * Accesses the API to run operations on the loader.
      *
+     * @param holder The holder the access is obtained from.
      * @return The API access.
      */
-    API access();
+    API access(ExtensionHolder holder);
+
+    /**
+     * A loader extension that does not need access to the
+     * backing holder.
+     *
+     * @param <API> The type of the API.
+     */
+    @FunctionalInterface
+    interface WithoutHolder<API> {
+
+        /**
+         * Accesses the API to run operations on the loader.
+         *
+         * @return The API access.
+         */
+        API access();
+    }
 
     /**
      * A unique identfier associated with a loader
