@@ -1,9 +1,12 @@
 package net.ashwork.mc.multiloader.neoforge.common.registry;
 
+import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
+import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.neoforge.common.NeoForgeCommonExtensionsProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -27,39 +30,37 @@ public class NeoForgeRegistryExtensions implements NeoForgeCommonExtensionsProvi
 
             @Override
             public <REGISTRY> Registrar<REGISTRY> create(ResourceKey<? extends Registry<REGISTRY>> registry) {
-                return _create(registry, modId, modBus, NeoForgeRegistryExtensions::_wrapBasic);
+                return _create(registry, modId, modBus);
             }
 
             @Override
             public <REGISTRY> Registrar<REGISTRY> create(ResourceKey<? extends Registry<REGISTRY>> registry, String namespace) {
-                return _create(registry, namespace, modBus, NeoForgeRegistryExtensions::_wrapBasic);
+                return _create(registry, namespace, modBus);
+            }
+
+            private static <REGISTRY> Registrar<REGISTRY> _create(ResourceKey<? extends Registry<REGISTRY>> registry, String namespace, IEventBus modBus) {
+                DeferredRegister<REGISTRY> registrar = DeferredRegister.create(registry, namespace);
+                registrar.register(modBus);
+                return new DeferredRegisterWrapper<>(registrar);
             }
         });
-        extensions.provide(ItemRegistrar.EXT, () -> namespace -> _create(Registries.ITEM, namespace, modBus, NeoForgeRegistryExtensions::_wrapItem));
-        extensions.provide(ItemRegistrar.BASIC, () -> _create(Registries.ITEM, modId, modBus, NeoForgeRegistryExtensions::_wrapItem));
+        registerSpecialRegistrars(extensions, ItemRegistrar.EXT, ItemRegistrar.BASIC, Registries.ITEM, modId, ItemRegistrarWrapper::new);
     }
 
-    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> REGISTRAR _create(ResourceKey<? extends Registry<REGISTRY>> registry, String namespace, IEventBus modBus, Function<DeferredRegister<REGISTRY>, REGISTRAR> factory) {
-        DeferredRegister<REGISTRY> registrar = DeferredRegister.create(registry, namespace);
-        registrar.register(modBus);
-        return factory.apply(registrar);
+    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> void registerSpecialRegistrars(
+            ExtensionRegistrar extensions, LoaderExtension.Key<Function<String, REGISTRAR>> accessor, LoaderExtension.Key<REGISTRAR> simpleAccessor,
+            ResourceKey<? extends Registry<REGISTRY>> registry, String defaultNamespace,
+            Function<Registrar<REGISTRY>, REGISTRAR> wrapper
+    ) {
+        extensions.provide(accessor, holder -> namespace -> _wrap(holder, registry, namespace, wrapper), RegistrarAccessor.EXT);
+        extensions.provide(simpleAccessor, holder -> _wrap(holder, registry, defaultNamespace, wrapper), RegistrarAccessor.EXT);
     }
 
-    private static <REGISTRY> Registrar<REGISTRY> _wrapBasic(DeferredRegister<REGISTRY> delegate) {
-        return new Registrar<REGISTRY>() {
-            @Override
-            public <IMPL extends REGISTRY> Holder<IMPL> register(String name, Function<Identifier, IMPL> factory) {
-                return (Holder<IMPL>) delegate.register(name, factory);
-            }
-        };
-    }
-
-    private static ItemRegistrar _wrapItem(DeferredRegister<Item> delegate) {
-        return new ItemRegistrar() {
-            @Override
-            public <IMPL extends Item> Holder<IMPL> register(String name, Function<Identifier, IMPL> factory) {
-                return (Holder<IMPL>) delegate.register(name, factory);
-            }
-        };
+    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> REGISTRAR _wrap(
+            ExtensionHolder holder,
+            ResourceKey<? extends Registry<REGISTRY>> registry, String namespace,
+            Function<Registrar<REGISTRY>, REGISTRAR> wrapper
+    ) {
+        return wrapper.apply(holder.access(RegistrarAccessor.EXT).create(registry, namespace));
     }
 }

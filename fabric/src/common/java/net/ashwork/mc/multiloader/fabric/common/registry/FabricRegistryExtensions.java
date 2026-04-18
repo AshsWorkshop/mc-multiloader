@@ -1,9 +1,12 @@
 package net.ashwork.mc.multiloader.fabric.common.registry;
 
+import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
+import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.fabric.common.FabricCommonExtensionsProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -27,40 +30,35 @@ public class FabricRegistryExtensions implements FabricCommonExtensionsProvider 
 
             @Override
             public <REGISTRY> Registrar<REGISTRY> create(ResourceKey<? extends Registry<REGISTRY>> registry) {
-                return _create(registry, modId, FabricRegistryExtensions::_wrapBasic);
+                return _create(registry, modId);
             }
 
             @Override
             public <REGISTRY> Registrar<REGISTRY> create(ResourceKey<? extends Registry<REGISTRY>> registry, String namespace) {
-                return _create(registry, namespace, FabricRegistryExtensions::_wrapBasic);
+                return _create(registry, namespace);
+            }
+
+            private static <REGISTRY> Registrar<REGISTRY> _create(ResourceKey<? extends Registry<REGISTRY>> registry, String namespace) {
+                return new VanillaRegistryWrapper<>(registry, namespace);
             }
         });
-        extensions.provide(ItemRegistrar.EXT, () -> namespace -> _create(Registries.ITEM, namespace, FabricRegistryExtensions::_wrapItem));
-        extensions.provide(ItemRegistrar.BASIC, () -> _create(Registries.ITEM, modId, FabricRegistryExtensions::_wrapItem));
+        registerSpecialRegistrars(extensions, ItemRegistrar.EXT, ItemRegistrar.BASIC, Registries.ITEM, modId, ItemRegistrarWrapper::new);
     }
 
-    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> REGISTRAR _create(ResourceKey<? extends Registry<REGISTRY>> key, String namespace, BiFunction<Registry<REGISTRY>, String, REGISTRAR> factory) {
-        Registry<REGISTRY> registry = (Registry<REGISTRY>) BuiltInRegistries.REGISTRY.getValue(key.identifier());
-        return factory.apply(registry, namespace);
+    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> void registerSpecialRegistrars(
+            ExtensionRegistrar extensions, LoaderExtension.Key<Function<String, REGISTRAR>> accessor, LoaderExtension.Key<REGISTRAR> simpleAccessor,
+            ResourceKey<? extends Registry<REGISTRY>> registry, String defaultNamespace,
+            Function<Registrar<REGISTRY>, REGISTRAR> wrapper
+    ) {
+        extensions.provide(accessor, holder -> namespace -> _wrap(holder, registry, namespace, wrapper), RegistrarAccessor.EXT);
+        extensions.provide(simpleAccessor, holder -> _wrap(holder, registry, defaultNamespace, wrapper), RegistrarAccessor.EXT);
     }
 
-    private static <REGISTRY> Registrar<REGISTRY> _wrapBasic(Registry<REGISTRY> delegate, String namespace) {
-        return new Registrar<REGISTRY>() {
-            @Override
-            public <IMPL extends REGISTRY> Holder<IMPL> register(String name, Function<Identifier, IMPL> factory) {
-                var id = Identifier.fromNamespaceAndPath(namespace, name);
-                return Registry.registerForHolder(delegate, id, factory.apply(id));
-            }
-        };
-    }
-
-    private static ItemRegistrar _wrapItem(Registry<Item> delegate, String namespace) {
-        return new ItemRegistrar() {
-            @Override
-            public <IMPL extends Item> Holder<IMPL> register(String name, Function<Identifier, IMPL> factory) {
-                var id = Identifier.fromNamespaceAndPath(namespace, name);
-                return Registry.registerForHolder(delegate, id, factory.apply(id));
-            }
-        };
+    private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> REGISTRAR _wrap(
+            ExtensionHolder holder,
+            ResourceKey<? extends Registry<REGISTRY>> registry, String namespace,
+            Function<Registrar<REGISTRY>, REGISTRAR> wrapper
+    ) {
+        return wrapper.apply(holder.access(RegistrarAccessor.EXT).create(registry, namespace));
     }
 }
