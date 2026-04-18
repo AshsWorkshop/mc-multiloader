@@ -22,7 +22,7 @@ public final class ExtensionManager implements ExtensionHolder {
     private final Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions;
 
     /**
-     * Loads and stores the extensions from a given provider. This implementation is meant
+     * Loads and resolves the extensions from a given provider. This implementation is meant
      * to allow ambiguity towards the backing provider, allowing loaders to create registration
      * methods with additional parameters.
      *
@@ -31,13 +31,22 @@ public final class ExtensionManager implements ExtensionHolder {
      * @return A {@link ExtensionHolder} for the provider.
      * @param <PROVIDER> The type of the extension provider.
      */
-    public static <PROVIDER> ExtensionManager load(Class<PROVIDER> providerClass, Function<PROVIDER, Consumer<ExtensionRegistrar>> method) {
-        var builder = new Builder();
+    public static <PROVIDER> ExtensionManager resolve(Class<PROVIDER> providerClass, Function<PROVIDER, Consumer<ExtensionRegistrar>> method) {
+        return load(providerClass).resolve(method);
+    }
 
-        // Load providers and register extensions
-        ServiceLoader.load(providerClass).forEach(provider -> method.apply(provider).accept(builder));
-
-        return builder.build();
+    /**
+     * Loads the providers that register extensions. This implementation is meant
+     * to allow ambiguity towards the backing provider, allowing loaders to create registration
+     * methods with additional parameters.
+     *
+     * @param providerClass The class of the extension provider.
+     * @return A {@link ExtensionManager.Loader} containing the providers.
+     * @param <PROVIDER> The type of the extension provider.
+     */
+    public static <PROVIDER> ExtensionManager.Loader<PROVIDER> load(Class<PROVIDER> providerClass) {
+        // Load providers
+        return new Loader<>(ServiceLoader.load(providerClass));
     }
 
     private ExtensionManager(Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions) {
@@ -57,6 +66,32 @@ public final class ExtensionManager implements ExtensionHolder {
     public <API> void accessIfPresent(LoaderExtension.Key<API> extension, Consumer<API> ifPresent) {
         if (this.extensions.containsKey(extension)){
             ifPresent.accept((API) this.extensions.get(extension).access(this));
+        }
+    }
+
+    /**
+     * A record that holds the loaded services for resolution.
+     *
+     * @param services The loaded serivces.
+     * @param <PROVIDER> The type of the provider to register extensions.
+     */
+    public static record Loader<PROVIDER>(ServiceLoader<PROVIDER> services) {
+
+        /**
+         * Resolves the extensions for the provider. This implementation is meant to allow
+         * ambiguity towards the backing provider, allowing loaders to create registration
+         * methods with additional parameters.
+         *
+         * @param method The currying method to register extensions to.
+         * @return A {@link ExtensionHolder} for the provider.
+         */
+        public ExtensionManager resolve(Function<PROVIDER, Consumer<ExtensionRegistrar>> method) {
+            var builder = new Builder();
+
+            // Register extensions
+            this.services.forEach(provider -> method.apply(provider).accept(builder));
+
+            return builder.build();
         }
     }
 

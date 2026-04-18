@@ -18,13 +18,22 @@ public class AbstractExtensionHolder<PROVIDER> implements ExtensionHolder {
     private final ExtensionHolder extensions;
 
     /**
-     * A basic constructor.
+     * A basic constructor that resolves the extension holder.
      *
      * @param providerClass The class of the extension provider.
      * @param method The currying method to register extensions to.
      */
     protected AbstractExtensionHolder(Class<PROVIDER> providerClass, Function<PROVIDER, Consumer<ExtensionRegistrar>> method) {
-        this.extensions = ExtensionManager.load(providerClass, method);
+        this(ExtensionManager.resolve(providerClass, method));
+    }
+
+    /**
+     * A basic constructor.
+     *
+     * @param extensions The extension holder.
+     */
+    protected AbstractExtensionHolder(ExtensionManager extensions) {
+        this.extensions = extensions;
     }
 
 
