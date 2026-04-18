@@ -1,5 +1,6 @@
 package net.ashwork.mc.multiloader.api.common.registry;
 
+import net.ashwork.mc.multiloader.api.Multiloader;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
@@ -16,7 +17,7 @@ public interface RegistrarAccessor {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
-    LoaderExtension.Key<RegistrarAccessor> EXT = new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath("multiloader", "registrar_accessor"));
+    LoaderExtension.Key<RegistrarAccessor> EXT = new LoaderExtension.Key<>(Multiloader.withId("registrar_accessor"));
 
     /**
      * Creates a registrar to register registry objects to

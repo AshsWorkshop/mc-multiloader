@@ -1,5 +1,6 @@
 package net.ashwork.mc.multiloader.api.common.registry;
 
+import net.ashwork.mc.multiloader.api.Multiloader;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -21,13 +22,13 @@ public interface ItemRegistrar extends Registrar<Item> {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
-    LoaderExtension.Key<ItemRegistrar> BASIC = new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath("multiloader", "item_registrar_basic"));
+    LoaderExtension.Key<ItemRegistrar> BASIC = new LoaderExtension.Key<>(Multiloader.withId("item_registrar_basic"));
     /**
      * Analogous to {@link RegistrarAccessor#create(ResourceKey, String)}.
      *
      * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
-    LoaderExtension.Key<Function<String, ItemRegistrar>> EXT = new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath("multiloader", "item_registrar"));
+    LoaderExtension.Key<Function<String, ItemRegistrar>> EXT = new LoaderExtension.Key<>(Multiloader.withId("item_registrar"));
 
     /**
      * Registers a basic {@link Item} with default properties.
