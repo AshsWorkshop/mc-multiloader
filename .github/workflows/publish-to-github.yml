@@ -1,0 +1,144 @@
+name: Publish to GitHub Packages
+on:
+  push:
+    branches:
+      # Only include commits to version branches
+      - '[0-9]+.[0-9]+.x'
+
+jobs:
+  check-publish:
+    name: Check if packages should be published
+    runs-on: ubuntu-latest
+    # Run only if commit message contains 'push[<comma-separated list of subprojects to bump>]'
+
+    # Since no regex is supported on the tag, we check contains first
+    if: contains(github.event.head_commit.message, 'push')
+
+    outputs:
+      publish_packages: ${{ steps.validate.outputs.publish_packages }}
+
+    steps:
+      - name: Validate publishing
+        id: validate
+        run: |
+          # Should be at start of message: 'feat(push[<>]): <message>'
+          if (echo ${{ github.event.head_commit.message }} | grep -qP '^[^\(\)]+\([^\(\)]*push(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$'); then
+            # Get packages to output, or 'all' if none is specified
+            groups=$(echo ${{ github.event.head_commit.message }} | perl -ne 'print $1 if /^[^\(\)]+\([^\(\)]*push(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$/')
+            if [[ -z $groups ]]; then
+              groups='all'
+            else
+              # Add platform so it only runs once
+              groups="$groups"
+            fi
+          
+            echo "publish_packages=$groups" >> $GITHUB_OUTPUT
+          else
+            # Echo an empty string as message is not in a valid form
+            echo "publish_packages=" >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+      name: Publish ${{ needs.check-publish.outputs.publish_packages }} packages
+
+      needs:
+        - check-publish
+      # Make sure there are packages to publish
+      if: needs.check-publish.outputs.publish_packages != ''
+
+      runs-on: ubuntu-latest
+
+      permissions:
+        contents: write
+        packages: write
+
+      steps:
+        - uses: actions/checkout@v6
+          with:
+            ref: ${{ github.ref_name }}
+
+        - name: Extract Java version
+          id: extract_java
+          run: echo "java_version=$(grep 'java_version' gradle.properties | awk -F= '{$2=$2;print $2}')" >> $GITHUB_OUTPUT
+
+        - name: Setup Java
+          uses: actions/setup-java@v6
+          with:
+            java_version: ${{ steps.extract_java.outputs.java_version }}
+            distribution: 'microsoft'
+
+        - name: Setup Gradle
+          uses: gradle/actions/setup-gradle@v6
+          with:
+            cache-provider: basic
+
+        - name: Publish package
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            # Loop through each project
+            for project in $(echo ${{ needs.check-publish.outputs.publish_packages }} | tr ',' '\n'); do
+              # Check if should publish all publications
+              if [[ $project = 'all' ]]; then
+                # Bump minor version
+                mod_version=$(grep 'mod_version' gradle.properties | awk -F= '{$2=$2;print $2}')
+                mod_minor=$(echo $mod_version | awk -F. '{$2=$2;print $2}')
+                mod_minor=$(($mod_minor + 1))
+                sed -i "s/mod_version=.*/mod_version=$(echo $mod_version | awk -F. '{$1=$1;print $1}').$mod_minor/" gradle.properties
+              
+                # Set project patch versions to 0
+                for d in */; do
+                  # Check to make sure there is a gradle.properties
+                  if [[ -f "$d/gradle.properties" ]]; then
+                    # Set patches to 0
+                    sed -i "s/mod_version_patch=.*/mod_version_patch=0/" "$d/gradle.properties"
+                  fi
+                done
+              
+                # Publish all packages
+                ./gradlew publish
+              else
+                # Bump patch version
+                mod_patch=$(grep 'mod_version_patch' $project/gradle.properties | awk -F= '{$2=$2;print $2}')
+                mod_patch=$(($mod_patch + 1))
+                sed -i "s/mod_version_patch=.*/mod_version_patch=$mod_patch/" "$project/gradle.properties"
+            
+                # Publish project packages
+                ./gradlew :$project:publish
+              fi
+            done
+
+        - name: Publish platform
+          # Already published in all
+          if: !contains(needs.check-publish.outputs.publish_packages, 'all')
+          run: ./gradlew :platform:publish
+
+        - name: Bump platform version
+          run: |
+            # Bump build version
+            mod_build=$(grep 'mod_version_build' platform/gradle.properties | awk -F= '{$2=$2;print $2}')
+            mod_build=$(($mod_build + 1))
+            sed -i "s/mod_version_build=.*/mod_version_build=$mod_build/" platform/gradle.properties
+
+        - name: Commit versions and push branch
+          run: |
+            if [ -n "$(git status --porcelain)" ]; then
+              # Setup user settings
+              git config --global user.name 'github-actions[bot]'
+              git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+              # Commit files
+              git add .
+              git commit -a -m "chore([skip ci]): Action ${{ github.run_number }} version bumps"
+              git push -u origin ${{ github.ref_name }}
+            
+              # If project published all packages, push tag
+              if [[ ${{ needs.check-publish.outputs.publish_packages }} == *"all"* ]]; then
+                # Get version
+                mod_version=$(grep 'mod_version' gradle.properties | awk -F= '{$2=$2;print $2}')
+                
+                # Create tag and push
+                git tag "v$mod_version"
+                git push origin "v$mod_version"
+              fi
+            fi

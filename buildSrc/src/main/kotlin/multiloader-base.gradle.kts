@@ -15,7 +15,7 @@ version = "${resolveProperty("mod_version")}+${resolveProperty("vanillaMinecraft
 java {
     withSourcesJar()
     toolchain.languageVersion.set(
-        JavaLanguageVersion.of(resolveProperty("javaVersion"))
+        JavaLanguageVersion.of(resolveProperty("java_version"))
     )
 }
 

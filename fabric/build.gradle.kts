@@ -43,7 +43,7 @@ fun generateModFile(name: String = "", dependsOn: Pair<String, String>? = null):
     return tasks.register("generate${if (name.isEmpty()) "" else name.replaceFirstChar { it.uppercase() }}ModFile") {
         // Dependencies
         val dependencies = mutableMapOf(
-            "java" to resolveProperty("javaVersion"),
+            "java" to resolveProperty("java_version"),
             "minecraft" to "~${resolveProperty("vanillaMinecraft")}",
             "fabricloader" to ">=${resolveProperty("fabricLoader")}",
             "fabric-api" to ">=${resolveProperty("fabricApi")}"

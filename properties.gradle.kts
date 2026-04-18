@@ -1,6 +1,3 @@
-// Common properties
-val javaVersion by extra("25")
-
 // Gradle libraries
 // - https://repo.maven.apache.org/maven2/io/github/wasabithumb/jtoml/
 val gradleJtoml by extra("1.5.2")
