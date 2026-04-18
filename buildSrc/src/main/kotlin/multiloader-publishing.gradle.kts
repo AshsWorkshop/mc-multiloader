@@ -68,7 +68,11 @@ publishing {
                 connection = "scm:git:git://${resolveProperty("mod_repository")}.git"
                 developerConnection = "scm:git:ssh://${resolveProperty("mod_repository")}.git"
                 url = "https://${resolveProperty("mod_repository")}"
-                tag = "git rev-parse --verify HEAD".runCommand(workingDir = rootProject.rootDir)
+                try {
+                    tag = "git rev-parse --verify HEAD".runCommand(workingDir = rootProject.rootDir)
+                } catch (e: Exception) {
+                    project.logger.warn("Unable to set tag for scm in artifact pom: ${e.message}")
+                }
             }
         }
     }
