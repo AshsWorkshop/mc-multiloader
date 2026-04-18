@@ -18,10 +18,14 @@ public interface ItemRegistrar extends Registrar<Item> {
 
     /**
      * Analogous to {@link RegistrarAccessor#create(ResourceKey)}.
+     *
+     * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
     LoaderExtension.Key<ItemRegistrar> BASIC = new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath("multiloader", "item_registrar_basic"));
     /**
      * Analogous to {@link RegistrarAccessor#create(ResourceKey, String)}.
+     *
+     * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
     LoaderExtension.Key<Function<String, ItemRegistrar>> EXT = new LoaderExtension.Key<>(Identifier.fromNamespaceAndPath("multiloader", "item_registrar"));
 

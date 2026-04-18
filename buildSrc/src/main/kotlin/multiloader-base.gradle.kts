@@ -23,6 +23,14 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
+tasks.withType<Javadoc>() {
+    if (options is StandardJavadocDocletOptions) {
+        (options as StandardJavadocDocletOptions).tags(
+            "extension:f:Access extension from: "
+        )
+    }
+}
+
 idea.module {
     isDownloadJavadoc = true
     isDownloadSources = true
