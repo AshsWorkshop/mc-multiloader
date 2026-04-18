@@ -114,6 +114,8 @@ jobs:
         - name: Publish platform
           # Make sure not published in all
           if: ${{ ! contains(needs.check-publish.outputs.publish_packages, 'all') }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: ./gradlew :platform:publish
 
         - name: Bump platform version
