@@ -129,10 +129,9 @@ neoForge {
     ideSyncTask(modFile)
 
     mods.create(resolveProperty("mod_id")) {
-        sourceSet(client)
-    }
-    mods.create("${resolveProperty("mod_id")}_data") {
-        sourceSet(data)
+        listOf(api.sourceSets, sourceSets).flatMap { it }.forEach {
+            sourceSet(it)
+        }
     }
 
     runs {
