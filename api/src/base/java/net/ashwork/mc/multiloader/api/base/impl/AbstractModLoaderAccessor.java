@@ -19,7 +19,7 @@ public abstract class AbstractModLoaderAccessor implements ModLoaderAccessor {
 
     @Override
     public ModLoader create(String modId) {
-        return this.loaders.computeIfAbsent(modId, this::create);
+        return this.loaders.computeIfAbsent(modId, this::_create);
     }
 
     protected abstract ModLoader _create(String modId);

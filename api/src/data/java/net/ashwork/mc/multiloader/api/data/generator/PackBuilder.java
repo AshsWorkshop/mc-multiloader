@@ -25,8 +25,9 @@ public interface PackBuilder {
      * by providers in a built-in pack.
      *
      * @param registrar The registrar to register the datapack entries to.
+     * @return This builder.
      */
-    void buildRegistries(Consumer<RegistrySetBuilder> registrar);
+    PackBuilder buildRegistries(Consumer<RegistrySetBuilder> registrar);
 
     /**
      * Registers the provided {@code bootstrap} to the datapack registry for
@@ -39,15 +40,17 @@ public interface PackBuilder {
      * @param registry The key of the datapack registry to bootstrap.
      * @param bootstrap The registrar to register the datapack entries.
      * @param <REGISTRY> The type of the registry objects.
+     * @return This builder.
      */
-    default <REGISTRY> void buildRegistry(ResourceKey<? extends Registry<REGISTRY>> registry, RegistrySetBuilder.RegistryBootstrap<REGISTRY> bootstrap) {
-        this.buildRegistries(builder -> builder.add(registry, bootstrap));
+    default <REGISTRY> PackBuilder buildRegistry(ResourceKey<? extends Registry<REGISTRY>> registry, RegistrySetBuilder.RegistryBootstrap<REGISTRY> bootstrap) {
+        return this.buildRegistries(builder -> builder.add(registry, bootstrap));
     }
 
     /**
      * Gathers the providers used to generate the data.
      *
      * @param gatherer The gatherer to add data providers to.
+     * @return This builder.
      */
-    void gatherProviders(Consumer<DataProviderGatherer> gatherer);
+    PackBuilder gatherProviders(Consumer<DataProviderGatherer> gatherer);
 }

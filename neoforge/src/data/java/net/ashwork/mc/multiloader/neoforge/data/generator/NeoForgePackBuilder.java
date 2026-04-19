@@ -34,13 +34,15 @@ public abstract sealed class NeoForgePackBuilder implements PackBuilder permits 
     }
 
     @Override
-    public void buildRegistries(Consumer<RegistrySetBuilder> registrar) {
+    public NeoForgePackBuilder buildRegistries(Consumer<RegistrySetBuilder> registrar) {
         this.registrars.add(registrar);
+        return this;
     }
 
     @Override
-    public void gatherProviders(Consumer<DataProviderGatherer> gatherer) {
+    public NeoForgePackBuilder gatherProviders(Consumer<DataProviderGatherer> gatherer) {
         this.gatherers.add(gatherer);
+        return this;
     }
 
     /**

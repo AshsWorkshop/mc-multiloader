@@ -38,13 +38,15 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
     }
 
     @Override
-    public void buildRegistries(Consumer<RegistrySetBuilder> registrar) {
+    public FabricPackBuilder buildRegistries(Consumer<RegistrySetBuilder> registrar) {
         this.registrars.add(registrar);
+        return this;
     }
 
     @Override
-    public void gatherProviders(Consumer<DataProviderGatherer> gatherer) {
+    public FabricPackBuilder gatherProviders(Consumer<DataProviderGatherer> gatherer) {
         this.gatherers.add(gatherer);
+        return this;
     }
 
     /**
