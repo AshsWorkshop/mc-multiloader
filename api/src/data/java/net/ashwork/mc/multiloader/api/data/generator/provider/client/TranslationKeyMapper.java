@@ -19,13 +19,13 @@ public interface TranslationKeyMapper {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer}
      */
-    LoaderExtension.Key<DataGatherer<TranslationKeyMapper>> ENGLISH_PROVIDER = Multiloader.extension("localization_provider");
+    LoaderExtension.Key<DataGatherer<TranslationKeyMapper>> ENGLISH_PROVIDER = Multiloader.extension("english_localization");
     /**
      * Generates the localizations for some translation keys for the provided locale.
      *
      * @extension {@link net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer}
      */
-    LoaderExtension.Key<Function<String, DataGatherer<TranslationKeyMapper>>> PROVIDER = Multiloader.extension("localization_provider");
+    LoaderExtension.Key<Function<String, DataGatherer<TranslationKeyMapper>>> PROVIDER = Multiloader.extension("localization");
 
     /**
      * Adds a translation.
