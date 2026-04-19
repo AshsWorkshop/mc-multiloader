@@ -24,7 +24,7 @@ public interface ModLoaderAccessor {
      * @param <ACCESSOR> The type of the accessor.
      */
     static <ACCESSOR extends ModLoaderAccessor> ACCESSOR initialize(Class<ACCESSOR> accessorClass) {
-        return ServiceLoader.load(accessorClass).findFirst()
+        return ServiceLoader.load(accessorClass, ModLoaderAccessor.class.getClassLoader()).findFirst()
                 .orElseThrow(() -> new IllegalStateException("No loader acessor is available for: " + accessorClass));
     }
 }
