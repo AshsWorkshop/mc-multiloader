@@ -24,7 +24,7 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
     return publishSourceSets(name, sources, baseName, withSources) {}
 }
 
-fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: String, withSources: Boolean = true, configurePom: Action<MavenPom>): TaskProvider<Jar> {
+fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: String, withSources: Boolean = true, withAccessTransformer: String? = null, configurePom: Action<MavenPom>): TaskProvider<Jar> {
     fun addLicense(copy: AbstractCopyTask) {
         var license = listOf(project, rootProject).asSequence().filter { it.file("LICENSE").exists() }.map { it.file("LICENSE") }.firstOrNull()
         if (license != null) {
@@ -59,6 +59,12 @@ fun Project.publishSourceSets(name: String, sources: List<SourceSet>, baseName: 
         publications.create<MavenPublication>(name) {
             artifactId = baseName
             setArtifacts(artifacts)
+            if (withAccessTransformer != null) {
+                artifact(withAccessTransformer) {
+                    classifier = "accesstransformer"
+                    extension = "cfg"
+                }
+            }
 
             pom(configurePom)
         }

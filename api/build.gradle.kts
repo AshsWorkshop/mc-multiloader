@@ -14,9 +14,18 @@ internal val common: SourceSet = sourceSets.createFrom("common", base, base)
 internal val client: SourceSet = sourceSets.createFrom("client", common, common)
 internal val data: SourceSet = sourceSets.createFrom("data", base, base)
 
+// Separate resources
+internal val transformers: SourceSet = sourceSets.create("accesstransformers") {
+    java.setSrcDirs(listOf<Any>())
+}
+
 neoForge {
     // Configure vanilla mode
     neoFormVersion = resolveProperty("vanillaNeoform")
+
+    accessTransformers {
+        from(*transformers.resources.files.map { it.toRelativeString(project.projectDir) }.toTypedArray())
+    }
 }
 
 afterEvaluate {
@@ -26,7 +35,8 @@ afterEvaluate {
     )
     publishSourceSets(
         "${project.name}Data", listOf(data),
-        "${project.base.archivesName.get()}-data"
+        "${project.base.archivesName.get()}-data",
+        withAccessTransformer = resourcesFilePath(transformers, "data.cfg")
     ) {
         name = "${resolveProperty("mod_name")} (${project.name}-data)"
 
