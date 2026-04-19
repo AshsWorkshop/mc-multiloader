@@ -3,6 +3,9 @@ package net.ashwork.mc.multiloader.fabric.data.generator;
 import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
 import net.ashwork.mc.multiloader.api.data.generator.PackFactory;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import net.minecraft.core.RegistrySetBuilder;
+import net.minecraft.data.DataProvider;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -54,14 +57,20 @@ public class FabricPackFactory implements PackFactory {
     }
 
     /**
-     * Performs the given action for each element until all elements
-     * have been processed or the action throws an exception. Actions
-     * are performed in the order of iteration, if that order is specified.
-     * Exceptions thrown by the action are relayed to the caller.
+     * Resolves the datapack registrars and registers them to a registry.
      *
-     * @param action The action to be performed for each element.
+     * @param registry The registry set to register to.
      */
-    public void forEach(Consumer<FabricPackBuilder> action) {
-        this.packs.forEach(action);
+    public void registerRegistries(RegistrySetBuilder registry) {
+        this.packs.forEach(builder -> builder.registerRegistries(registry));
+    }
+
+    /**
+     * Resolves and registers the stored {@link DataProvider}s.
+     *
+     * @param generator The data generator..
+     */
+    public void registerProviders(FabricDataGenerator generator) {
+        this.packs.forEach(builder -> builder.registerProviders(generator, this.modId, this.exts));
     }
 }

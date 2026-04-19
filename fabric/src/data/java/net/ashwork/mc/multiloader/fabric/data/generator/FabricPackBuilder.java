@@ -63,10 +63,9 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
      *
      * @param generator The data generator.
      * @param modId The identiifer of the mod.
-     * @param registries The registry snapshot.
      * @param loader The loaded providers to resolve.
      */
-    public abstract void registerProviders(FabricDataGenerator generator, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader);
+    public abstract void registerProviders(FabricDataGenerator generator, String modId, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader);
 
     protected void registerProviders(FabricDataGenerator.Pack pack, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
         var gatherer = new FabricDataProviderGatherer(pack, modId, registries, loader);
@@ -102,8 +101,8 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
     public static final class Global extends FabricPackBuilder {
 
         @Override
-        public void registerProviders(FabricDataGenerator generator, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
-            this.registerProviders(generator.createPack(), modId, registries, loader);
+        public void registerProviders(FabricDataGenerator generator, String modId, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
+            this.registerProviders(generator.createPack(), modId, generator.getRegistries(), loader);
         }
     }
 
@@ -125,8 +124,8 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
         }
 
         @Override
-        public void registerProviders(FabricDataGenerator generator, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
-            this.registerProviders(generator.createBuiltinResourcePack(this.id), modId, registries, loader);
+        public void registerProviders(FabricDataGenerator generator, String modId, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
+            this.registerProviders(generator.createBuiltinResourcePack(this.id), modId, generator.getRegistries(), loader);
         }
     }
 }
