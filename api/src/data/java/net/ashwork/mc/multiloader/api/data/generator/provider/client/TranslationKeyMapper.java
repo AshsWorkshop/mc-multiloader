@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * A mapper that maps a translation key to its corresponding translation.
+ * Maps a translation key to its corresponding translation.
  */
 public interface TranslationKeyMapper {
 
@@ -19,13 +19,13 @@ public interface TranslationKeyMapper {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer}
      */
-    LoaderExtension.Key<DataGatherer<TranslationKeyMapper>> ENGLISH_PROVIDER = Multiloader.extension("english_localization");
+    LoaderExtension.Key<DataGatherer.One<TranslationKeyMapper>> ENGLISH_PROVIDER = Multiloader.extension("english_localization");
     /**
      * Generates the localizations for some translation keys for the provided locale.
      *
      * @extension {@link net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer}
      */
-    LoaderExtension.Key<Function<String, DataGatherer<TranslationKeyMapper>>> PROVIDER = Multiloader.extension("localization");
+    LoaderExtension.Key<Function<String, DataGatherer.One<TranslationKeyMapper>>> PROVIDER = Multiloader.extension("localization");
 
     /**
      * Adds a translation.

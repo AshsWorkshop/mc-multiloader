@@ -4,15 +4,38 @@ import java.util.function.Consumer;
 
 /**
  * Gathers data for the provider to generate.
- *
- * @param <PROVIDER> The type of the data provider.
  */
-public interface DataGatherer<PROVIDER> {
+public interface DataGatherer {
 
     /**
-     * Adds the provider to generate data for.
+     * Gathers data from one provider to generate.
      *
-     * @param provider The provider.
+     * @param <PROVIDER> The type of the provider.
      */
-    void add(Consumer<PROVIDER> provider);
+    interface One<PROVIDER> {
+
+        /**
+         * Adds the provider to generate data for.
+         *
+         * @param provider The provider.
+         */
+        void add(Consumer<PROVIDER> provider);
+    }
+
+    /**
+     * Gathers data from two providers to generate.
+     *
+     * @param <PROVIDERA> The type of the first provider.
+     * @param <PROVIDERB> The type of the second provider.
+     */
+    interface Two<PROVIDERA, PROVIDERB> {
+
+        /**
+         * Adds the providers to generate data for.
+         *
+         * @param providerA The first provider.
+         * @param providerB The second provider.
+         */
+        void add(Consumer<PROVIDERA> providerA, Consumer<PROVIDERB> providerB);
+    }
 }
