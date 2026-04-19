@@ -9,6 +9,7 @@ import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -20,6 +21,7 @@ import java.util.function.Function;
 public final class ExtensionManager implements ExtensionHolder {
 
     private final Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions;
+    private final Map<LoaderExtension.Key<?>, Object> resolved;
 
     /**
      * Loads and resolves the extensions from a given provider. This implementation is meant
@@ -51,12 +53,13 @@ public final class ExtensionManager implements ExtensionHolder {
 
     private ExtensionManager(Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions) {
         this.extensions = extensions;
+        this.resolved = new IdentityHashMap<>();
     }
 
     @Override
     public <API> API access(LoaderExtension.Key<API> extension) throws IllegalArgumentException {
         if (this.extensions.containsKey(extension)) {
-            return (API) this.extensions.get(extension).access(this);
+            return (API) this.resolved.computeIfAbsent(extension, k -> this.extensions.get(k).access(this));
         }
 
         throw new IllegalArgumentException("Extension '" + extension + "' is not implemented on the current holder");
@@ -65,7 +68,7 @@ public final class ExtensionManager implements ExtensionHolder {
     @Override
     public <API> void accessIfPresent(LoaderExtension.Key<API> extension, Consumer<API> ifPresent) {
         if (this.extensions.containsKey(extension)){
-            ifPresent.accept((API) this.extensions.get(extension).access(this));
+            ifPresent.accept((API) this.resolved.computeIfAbsent(extension, k -> this.extensions.get(k).access(this)));
         }
     }
 

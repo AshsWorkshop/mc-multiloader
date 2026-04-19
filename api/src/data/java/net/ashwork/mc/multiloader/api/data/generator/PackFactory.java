@@ -26,7 +26,7 @@ public interface PackFactory {
 
     /**
      * Creates a built-in pack located in 'data/{@code id_namespace}/datapacks/{@code id_path}'.
-     * Assymes the namespace is the mod creating the pack.
+     * Assumes the namespace is the mod creating the pack.
      *
      * @param id The identifier of the built-in pack.
      * @return The {@link PackBuilder} to generate data for.
