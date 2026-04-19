@@ -25,8 +25,8 @@ public interface PackFactory {
     PackBuilder global();
 
     /**
-     * Creates a built-in pack located in 'data/{@code id_namespace}/datapacks/{@code id_path}'.
-     * Assumes the namespace is the mod creating the pack.
+     * Creates a built-in pack. Assumes the namespace is the
+     * mod creating the pack.
      *
      * @param id The identifier of the built-in pack.
      * @return The {@link PackBuilder} to generate data for.
@@ -34,7 +34,7 @@ public interface PackFactory {
     PackBuilder builtIn(String id);
 
     /**
-     * Creates a built-in pack located in 'data/{@code id_namespace}/datapacks/{@code id_path}'.
+     * Creates a built-in pack.
      *
      * @param id The identifier of the built-in pack.
      * @return The {@link PackBuilder} to generate data for.

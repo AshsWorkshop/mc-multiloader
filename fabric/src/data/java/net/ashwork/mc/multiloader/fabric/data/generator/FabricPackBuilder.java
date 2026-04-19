@@ -124,7 +124,7 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
 
         @Override
         public void registerProviders(FabricDataGenerator generator, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<FabricGathererExtensionsProvider> loader) {
-            this.registerProviders(((FabricDataGeneratorExtension) (Object) generator).createBuiltInDataPack(this.id), modId, registries, loader);
+            this.registerProviders(generator.createBuiltinResourcePack(this.id), modId, registries, loader);
         }
     }
 }

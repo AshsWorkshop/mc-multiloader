@@ -130,7 +130,12 @@ neoForge {
 
     mods.create(resolveProperty("mod_id")) {
         listOf(api.sourceSets, sourceSets).flatMap { it }.forEach {
-            sourceSet(it)
+            if (!it.name.lowercase().contains("data")) sourceSet(it)
+        }
+    }
+    mods.create("${resolveProperty("mod_id")}_data") {
+        listOf(api.sourceSets, sourceSets).flatMap { it }.forEach {
+            if (it.name.lowercase().contains("data")) sourceSet(it)
         }
     }
 
