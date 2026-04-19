@@ -48,7 +48,7 @@ public final class ExtensionManager implements ExtensionHolder {
      */
     public static <PROVIDER> ExtensionManager.Loader<PROVIDER> load(Class<PROVIDER> providerClass) {
         // Load providers
-        return new Loader<>(ServiceLoader.load(providerClass));
+        return new Loader<>(ServiceLoader.load(providerClass, providerClass.getClassLoader()));
     }
 
     private ExtensionManager(Map<LoaderExtension.Key<?>, LoaderExtension<?>> extensions) {
