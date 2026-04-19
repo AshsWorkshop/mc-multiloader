@@ -82,7 +82,7 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
                         RegistryDataLoader.SYNCHRONIZED_REGISTRIES
                 ).stream().flatMap(list -> list.stream()).forEach(data -> {
                     if (seen.add(data.key())) {
-                        entries.addAll(registries.lookupOrThrow(data.key()));
+                        registries.lookup(data.key()).ifPresent(registry -> entries.addAll(registry));
                     }
                 });
             }
