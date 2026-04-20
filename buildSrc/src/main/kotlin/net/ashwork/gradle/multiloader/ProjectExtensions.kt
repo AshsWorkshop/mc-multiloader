@@ -203,6 +203,7 @@ private fun Configuration.extendsFromNoArtifacts(project: Project, named: NamedD
 }
 
 // Same logic as https://github.com/neoforged/ModDevGradle/blob/846b2d70f99519640efd6620e7d6f9034fe38285/src/main/java/net/neoforged/moddevgradle/internal/DataFileCollections.java#L107-L135
+// just for other features than the main one
 class AccessTransformerElementHelper constructor(val project: Project, sourceSet: SourceSet) {
     var artifactCount: Int = 0
     var firstArtifact: ConfigurablePublishArtifact? = null
