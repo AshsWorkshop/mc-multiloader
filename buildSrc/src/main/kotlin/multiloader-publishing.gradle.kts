@@ -12,6 +12,8 @@ plugins {
     `maven-publish`
 }
 
+group = resolveProperty("mod_group")
+
 download.run {
     src("https://raw.githubusercontent.com/spdx/license-list-data/main/json/details/${resolveProperty("mod_license")}.json")
     dest(rootProject.layout.buildDirectory.asFile.get().resolve("licenses/${resolveProperty("mod_license")}.json"))
