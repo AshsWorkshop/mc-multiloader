@@ -3,7 +3,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-val modId = providers.gradleProperty("mod_id").get()
+val modId: String = providers.gradleProperty("mod_id").get()
 
 rootProject.name = modId
 

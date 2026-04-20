@@ -75,13 +75,13 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
     val apiElements by configurations.named(sourceSet.apiElementsConfigurationName)
     val runtimeElements by configurations.named(sourceSet.runtimeElementsConfigurationName)
 
+    // Cross-project dependencies on features are handled primarily through artifact views on this configuration; it is
+    // split into a dependency scope and resolvable config because every Configuration should have exactly one scope.
     val crossProjectDependencies = configurations.dependencyScope(sourceSet.getTaskName(null, "crossProjectDependencies")).get()
     val crossProjectClasspath = configurations.resolvable(sourceSet.getTaskName(null, "crossProjectClasspath")) {
         extendsFrom(crossProjectDependencies)
         isTransitive = false
     }.get()
-
-    val bundlingSet = bundle.toSet()
     
     fun addPublishedDependency(notation: String) {
         val publishedDependencies = configurations.maybeCreate(sourceSet.getTaskName(null, "justPublishedDependencies"))
@@ -91,19 +91,25 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
     }
     
     if (depend != null) {
+        // Should only be relevant with loom "main", due to it being impossible to properly inherit from only "main" with loom and get the things it bundles too
         for (dependency in depend) {
             addPublishedDependency(dependency)
         }
     }
-    
+
+    val bundlingSet = bundle.toSet()
     for (output in inherit) {
         if (publish && depend == null && !bundlingSet.contains(output)) {
             // Since this is a dependency, but is not bundled, we should provide a dependency on the relevant (presumably published) feature
             addPublishedDependency(output)
         }
         
+        // At this point (as done later as well), the logic is split between in-project and cross-project dependencies.
+        // In-project features are fully inherited. Cross-project features inherit output only, not classpath or published dependencies.
+        // This makes life a lot simpler and is all that is needed for this as used here.
+        
         if (output.contains(":")) {
-            // allows for "clean" cross-project dependencies on classes/resources
+            // This allows for "clean" cross-project dependencies on classes/resources.
             // We can resolve either classes or resources by making a non-transitive dependency, and then doing artifactViews
             // with the relevant library type
             dependencies.add(crossProjectDependencies.name, featureFromNotation(output))
@@ -116,6 +122,8 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
         }
 
         if (!excludeClasspathDependencies) {
+            // Once again, more loom jankiness -- normally we would always want this. Except for "main" on loom, we are
+            // forced to inherit the compile/runtime classpaths *backwards* because loom will only add modding deps to those. 
             compileClasspath.extendsFrom(configurations.named(otherSourceSet.compileClasspathConfigurationName))
             runtimeClasspath.extendsFrom(configurations.named(otherSourceSet.runtimeClasspathConfigurationName))
         }
@@ -123,6 +131,8 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
         runtimeElements.extendsFromNoArtifacts(this, configurations.named(otherSourceSet.runtimeElementsConfigurationName))
     }
 
+    // We can get the classes and resources of cross-project dependencies through artifact views on the resolved config.
+    // This is the equivalent of SourceSet.output on the in-project case; it gives all the source set classes and resources.
     val crossProjectInclude = files(crossProjectClasspath.incoming.artifactView {
         attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements::class.java, LibraryElements.CLASSES))
     }.files, crossProjectClasspath.incoming.artifactView {
@@ -134,8 +144,11 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
 
     if (publish) {
         val license = listOf(project, rootProject).asSequence().map {
+            // someProject.file("LICENSE") would break project isolation; this is more future-proof
             it.projectDir.resolve("LICENSE")
         }.firstOrNull { it.exists() }
+        
+        // This bit basically replicates some of the logic from `inherit`, just collecting different information 
         val bundleSourceSets: MutableList<SourceSet> = mutableListOf()
         val crossProjectBundleDependencies = configurations.dependencyScope(sourceSet.getTaskName(null, "crossProjectBundle")).get()
         val crossProjectBundleClasspath = configurations.resolvable(sourceSet.getTaskName(null, "crossProjectBundleClasspath")) {
@@ -182,6 +195,8 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
             val crossProjectSourcesInclude = files(crossProjectBundleClasspath.incoming.artifactView {
                 attributes.attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.DOCUMENTATION))
                 attributes.attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType::class.java, DocsType.SOURCES))
+                // variant reselection means we can get the relevant xyzSourcesElements -- which normally an artifact
+                // view could never find, as it belongs to a different variant.
                 withVariantReselection()
             }.files.elements.map(objects.newInstance(UnzipTransformer::class.java)))
             from(crossProjectSourcesInclude) {
@@ -194,6 +209,9 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
 }
 
 private fun Configuration.extendsFromNoArtifacts(project: Project, named: NamedDomainObjectProvider<Configuration>) {
+    // This is a tool to make one configuration "extend" from another, without copying its artifacts.
+    // This allows a bundling feature to properly inherit the deps of the things it bundles, without also ending up with
+    // all its artifacts and capabilities.
     val dependenciesConfiguration = project.configurations.maybeCreate(named.get().name + "Dependencies")
     dependenciesConfiguration.isCanBeResolved = false
     dependenciesConfiguration.isCanBeConsumed = false
@@ -241,6 +259,8 @@ class AccessTransformerElementHelper constructor(val project: Project, sourceSet
 }
 
 abstract class UnzipTransformer : Transformer<FileCollection, Set<FileSystemLocation>> {
+    // Simply a tool to lazily unzip a set of files in a way that can be piped into a file collection, since apparently
+    // Gradle has no built-in way of doing this
     @get:Inject
     abstract val archiveOperations: ArchiveOperations
     
@@ -255,15 +275,21 @@ abstract class UnzipTransformer : Transformer<FileCollection, Set<FileSystemLoca
     }
 }
 
+/**
+ * Add an access transformer to MDG and publish it, but publish it in the specified feature (which need not be "main").
+ */
 fun Project.publishedAccessTransformer(file: File, feature: String) {
     val neoForge: NeoForgeExtension by extensions
     neoForge.accessTransformers {
         from(file.toRelativeString(project.projectDir))
         if (feature == "main") {
+            // We can use what MDG already has here
             publish(file.toRelativeString(project.projectDir))
         }
     }
     if (feature != "main") {
+        // MDG doesn't have built-in support for ATs in other features on the publishing side, so we have to do this
+        // manually, replicating MDG's logic. Note that on the *consuming* side this will all work with MDG out-of-the-box.
         val sourceSets: SourceSetContainer by extensions
         val sourceSet by sourceSets.named(feature)
         val configurationName = sourceSet.getTaskName(null, "accessTranformersElements")
@@ -279,6 +305,8 @@ fun Project.publishedAccessTransformer(file: File, feature: String) {
             val java = project.components.getByName("java") as AdhocComponentWithVariants
             java.addVariantsFromConfiguration(configuration) {}
         }
+        // This extension (logic quite similar to MDG's) serves to track multiple access transformers we may add, so
+        // that their classifiers are adjusted to not overlap when published.
         val helper: AccessTransformerElementHelper = sourceSet.extensions.getByType(AccessTransformerElementHelper::class.java)
         helper.accept(file, configuration)
     }

@@ -3,7 +3,6 @@ import net.ashwork.gradle.multiloader.*
 import org.gradle.api.Action
 import org.gradle.api.publish.maven.MavenPomLicense
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.`maven-publish`
 import org.gradle.kotlin.dsl.withType
 
