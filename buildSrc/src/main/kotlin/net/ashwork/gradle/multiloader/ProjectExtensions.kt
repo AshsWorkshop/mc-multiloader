@@ -190,7 +190,7 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
             }
 
             for (otherSourceSet in bundleSourceSets) {
-                from(otherSourceSet.output)
+                from(otherSourceSet.allSource)
             }
             val crossProjectSourcesInclude = files(crossProjectBundleClasspath.incoming.artifactView {
                 attributes.attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.DOCUMENTATION))
@@ -227,6 +227,7 @@ class AccessTransformerElementHelper constructor(val project: Project, sourceSet
     var firstArtifact: ConfigurablePublishArtifact? = null
     val copyTaskName: String = sourceSet.getTaskName("copy", "AccessTransformersElementsPublications")
     val copyTask: TaskProvider<CopyDataFile> = project.tasks.register<CopyDataFile>(copyTaskName)
+    val featureName: String = sourceSet.name
 
     fun accept(file: File, configuration: Configuration) {
         val dummyArtifact = project.artifacts.add(configuration.name, file)
@@ -246,13 +247,13 @@ class AccessTransformerElementHelper constructor(val project: Project, sourceSet
             val currentFirstArtifact = firstArtifact
             if (currentFirstArtifact == null) {
                 firstArtifact = this
-                this.classifier = "accesstransformer"
+                this.classifier = "${featureName}-accesstransformer"
                 artifactCount = 1
             } else {
                 if (artifactCount == 1) {
-                    currentFirstArtifact.classifier = "accesstransformer$artifactCount"
+                    currentFirstArtifact.classifier = "${featureName}-accesstransformer$artifactCount"
                 }
-                classifier = "accesstransformer${(++artifactCount)}"
+                classifier = "${featureName}-accesstransformer${(++artifactCount)}"
             }
         }
     }
