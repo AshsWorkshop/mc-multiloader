@@ -115,10 +115,6 @@ data.resources {
     srcDir(dataModFile)
 }
 
-val ensureResourcesAvailable = tasks.register("ensureResourcesAvailable") {
-    dependsOn(sourceSets.main.get().runtimeClasspath, data.runtimeClasspath)
-}
-
 neoForge {
     version = resolveProperty("neoforgeApi")
 
@@ -139,11 +135,6 @@ neoForge {
     }
 
     runs {
-        configureEach {
-            // Ensures that all resources are processed for runs, as MDG seems to struggle with this
-            tasksBefore.add(ensureResourcesAvailable)
-        }
-        
         create("client") {
             client()
         }
@@ -163,6 +154,7 @@ neoForge {
         configureEach {
             systemProperty("forge.logging.markers", "REGISTRIES")
             logLevel = org.slf4j.event.Level.DEBUG
+            sourceSet = data
         }
         named { !it.lowercase(Locale.ROOT).contains("data") }.configureEach {
             systemProperty("neoforge.enabledGameTestNamespaces", resolveProperty("mod_id"))
