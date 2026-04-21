@@ -62,10 +62,17 @@ fun Project.configureInheritingFeature(name: String, vararg inherit: String, pub
         sourceSet = sourceSets.create(name)
         java.registerFeature(name) {
             usingSourceSet(sourceSet)
+            withSourcesJar()
             if (!publish) {
                 this.disablePublication()
-            } else {
-                withSourcesJar()
+            }
+        }
+        // We need the sources jar to always exist and be visible cross-project, to create combined sources jars, but we also need to not publish it for most features
+        if (!publish) {
+            val java = project.components.getByName("java") as AdhocComponentWithVariants
+            val sourcesElements by configurations.named(sourceSet.sourcesElementsConfigurationName)
+            java.withVariantsFromConfiguration(sourcesElements) {
+                skip()
             }
         }
     }
