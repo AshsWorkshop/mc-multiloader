@@ -3,10 +3,12 @@ package net.ashwork.mc.multiloader.neoforge.common.registry;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
+import net.ashwork.mc.multiloader.api.common.registry.BlockItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.BlockRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.impl.BlockItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.BlockRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.neoforge.common.NeoForgeCommonExtensionsProvider;
@@ -48,6 +50,14 @@ public class NeoForgeRegistryExtensions implements NeoForgeCommonExtensionsProvi
         });
         registerSpecialRegistrars(extensions, ItemRegistrar.EXT, ItemRegistrar.BASIC, Registries.ITEM, modId, ItemRegistrarWrapper::new);
         registerSpecialRegistrars(extensions, BlockRegistrar.EXT, BlockRegistrar.BASIC, Registries.BLOCK, modId, BlockRegistrarWrapper::new);
+        extensions.provide(BlockItemRegistrar.EXT, holder -> namespace -> new BlockItemRegistrarWrapper(
+                holder.access(BlockRegistrar.EXT).apply(namespace),
+                holder.access(ItemRegistrar.EXT).apply(namespace)
+        ), ItemRegistrar.EXT, BlockRegistrar.EXT);
+        extensions.provide(BlockItemRegistrar.BASIC, holder -> new BlockItemRegistrarWrapper(
+                holder.access(BlockRegistrar.BASIC),
+                holder.access(ItemRegistrar.BASIC)
+        ), ItemRegistrar.BASIC, BlockRegistrar.BASIC);
     }
 
     private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> void registerSpecialRegistrars(
