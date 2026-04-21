@@ -1,41 +1,39 @@
 import groovy.json.JsonOutput
+import net.ashwork.gradle.multiloader.configureInheritingFeature
+import net.ashwork.gradle.multiloader.publication
+import net.ashwork.gradle.multiloader.resolveProperty
 import net.fabricmc.loom.configuration.ide.idea.IdeaSyncTask
-import org.gradle.api.Task
-import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.withType
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import net.ashwork.gradle.multiloader.*
 
 plugins {
     id("multiloader-base")
     id("net.fabricmc.fabric-loom")
 }
 
-internal val api: Project = rootProject.project(":api")
+val base = configureInheritingFeature("base", "api:base")
+val common = configureInheritingFeature("common", "base", "api:common")
+val client = configureInheritingFeature("client", "common", "api:client")
+val data = configureInheritingFeature("data", "common", "client", "api:data", publish = true, bundle = listOf("api:data"), depend = listOf("main"))
 
-// Create source sets
-internal val base: SourceSet = sourceSets.createFrom("base", sourceSets["main"], api.sourceSets["base"])
-internal val common: SourceSet = sourceSets.createFrom("common", base, base, api.sourceSets["common"])
-internal val client: SourceSet = sourceSets.createFrom("client", common, common, api.sourceSets["client"])
-internal val data: SourceSet = sourceSets.createFrom("data", client, client, api.sourceSets["data"])
+configureInheritingFeature("main", "base", "common", "client", "api:base", "api:common", "api:client", publish = true, bundle = listOf("base", "common", "client", "api:base", "api:common", "api:client"), excludeClasspathDependencies = true)
 
-tasks.named("compileJava") {
-    dependsOn(tasks.named("compileDataJava"))
-}
+// `excludeClasspathDependencies` lets us do this
+configurations.named("baseCompileClasspath") { extendsFrom(configurations.compileClasspath) }
+configurations.named("baseRuntimeClasspath") { extendsFrom(configurations.runtimeClasspath) }
 
 internal val generated: SourceSet = sourceSets.create("generated") {
     java.setSrcDirs(emptyList<Any>())
 }
 
+val baseImplementation by configurations.getting
+
 dependencies {
-    minecraft("com.mojang:minecraft:${resolveProperty("vanillaMinecraft")}")
-    implementation("net.fabricmc:fabric-loader:${resolveProperty("fabricLoader")}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")
+    minecraft("com.mojang:minecraft:${resolveProperty("vanillaMinecraft")}")    
+    // This needs to also be present in "main" so that loom sets up loader properly, as it is hard-coded to "main".
+    implementation(baseImplementation("net.fabricmc:fabric-loader:${resolveProperty("fabricLoader")}")!!)
+    baseImplementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")
 }
 
 fun generateModFile(name: String = "", dependsOn: Pair<String, String>? = null, withAccessWidener: Boolean = false, withMixins: Boolean = false): TaskProvider<Task> {
@@ -152,13 +150,6 @@ data.resources {
 //    srcDir(dataMixins)
 }
 
-tasks.withType<IdeaSyncTask>().forEach {
-    it.finalizedBy(modFile)
-    it.finalizedBy(dataModFile)
-//    it.finalizedBy(dataMixins)
-//    it.finalizedBy(dataResources)
-}
-
 loom {
     runs {
         named("client") {
@@ -179,32 +170,19 @@ loom {
 //    accessWidenerPath = layout.buildDirectory.asFile.get().resolve("templates/${data.name}/${resolveProperty("mod_id")}_data.classtweaker")
 }
 
+tasks.withType<IdeaSyncTask>().configureEach {
+    dependsOn(modFile)
+    dependsOn(dataModFile)
+//    dependsOn(dataMixins)
+//    dependsOn(dataResources)
+}
+
 fabricApi.configureDataGeneration {
     client = true
     createRunConfiguration = true
     outputDirectory = generated.resources.srcDirs.first()
 }
 
-afterEvaluate {
-    var jar = publishSourceSets(
-        project.name, listOf(
-            sourceSets["base"], common, client,
-            api.sourceSets["base"], api.sourceSets["common"], api.sourceSets["client"]
-        ),
-        project.base.archivesName.get()
-    ) {
-        dependencies { runtime(configurations.compileClasspath) { it in listOf("fabric-loader", "fabric-api") } }
-    }
-    publishSourceSets(
-        "${project.name}Data", listOf(data, api.sourceSets["data"]),
-        "${project.base.archivesName.get()}-data"
-    ) {
-        name = "${resolveProperty("mod_name")} (${project.name}-data)"
-
-        // Need to manually resolve dependency due to source set shenanigans
-        dependencies {
-            compile(jar)
-            runtime(configurations.compileClasspath) { it in listOf("fabric-loader", "fabric-api") }
-        }
-    }
+publication {
+    name = "${resolveProperty("mod_name")} (${project.name})"
 }

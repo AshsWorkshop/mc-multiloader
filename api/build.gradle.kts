@@ -1,46 +1,36 @@
-import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.provideDelegate
-import net.ashwork.gradle.multiloader.*
-import java.util.Locale
+import net.ashwork.gradle.multiloader.configureInheritingFeature
+import net.ashwork.gradle.multiloader.publication
+import net.ashwork.gradle.multiloader.publishedAccessTransformer
+import net.ashwork.gradle.multiloader.resolveProperty
 
 plugins {
     id("multiloader-base")
     id("net.neoforged.moddev")
 }
 
-// Create source sets
-internal val base: SourceSet = sourceSets.createFrom("base", sourceSets["main"])
-internal val common: SourceSet = sourceSets.createFrom("common", base, base)
-internal val client: SourceSet = sourceSets.createFrom("client", common, common)
-internal val data: SourceSet = sourceSets.createFrom("data", base, base)
+val base = configureInheritingFeature("base")
+val common = configureInheritingFeature("common", "base")
+val client = configureInheritingFeature("client", "common")
+val data = configureInheritingFeature("data", "main", publish = true)
+
+configureInheritingFeature("main", "base", "common", "client", publish = true, bundle = listOf("base", "common", "client"))
 
 // Separate resources
 internal val transformers: SourceSet = sourceSets.create("accesstransformers") {
     java.setSrcDirs(listOf<Any>())
 }
 
+transformers.resources.files.forEach {
+    project.publishedAccessTransformer(it, "data")
+}
+
 neoForge {
     // Configure vanilla mode
     neoFormVersion = resolveProperty("vanillaNeoform")
 
-    accessTransformers {
-        from(*transformers.resources.files.map { it.toRelativeString(project.projectDir) }.toTypedArray())
-    }
+    addModdingDependenciesTo(base)
 }
 
-afterEvaluate {
-    var jar = publishSourceSets(
-        project.name, listOf(sourceSets["base"], common, client),
-        project.base.archivesName.get()
-    )
-    publishSourceSets(
-        "${project.name}Data", listOf(data),
-        "${project.base.archivesName.get()}-data",
-        withAccessTransformer = resourcesFilePath(transformers, "data.cfg")
-    ) {
-        name = "${resolveProperty("mod_name")} (${project.name}-data)"
-
-        // Need to manually resolve dependency due to source set shenanigans
-        dependencies { compile(jar) }
-    }
+publication {
+    name = "${resolveProperty("mod_name")} (${project.name})"
 }
