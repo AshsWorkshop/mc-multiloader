@@ -116,15 +116,15 @@ jobs:
           if: ${{ ! contains(needs.check-publish.outputs.publish_packages, 'all') }}
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: ./gradlew :platform:publish
+          run: ./gradlew :publish
 
         - name: Bump platform version
           shell: bash
           run: |
             # Bump build version
-            mod_build=$(grep 'mod_version_build' platform/gradle.properties | awk -F= '{$2=$2;print $2}')
+            mod_build=$(grep 'mod_platform_version_build' gradle.properties | awk -F= '{$2=$2;print $2}')
             mod_build=$(($mod_build + 1))
-            sed -i "s/mod_version_build=.*/mod_version_build=$mod_build/" platform/gradle.properties
+            sed -i "s/mod_platform_version_build=.*/mod_platform_version_build=$mod_build/" gradle.properties
 
         - name: Commit versions and push branch
           shell: bash
