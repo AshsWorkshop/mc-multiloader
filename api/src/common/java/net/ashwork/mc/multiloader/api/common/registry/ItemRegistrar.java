@@ -73,6 +73,6 @@ public interface ItemRegistrar extends Registrar<Item> {
      * @param <IMPL> The type of the item being registered.
      */
     default <IMPL extends Item> Holder<IMPL> registerItem(String name, Function<Item.Properties, IMPL> factory, UnaryOperator<Item.Properties> properties) {
-        return this.register(name, key -> factory.apply(properties.apply(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, key)))));
+        return this.register(name, key -> factory.apply(properties.apply(new Item.Properties()).setId(ResourceKey.create(Registries.ITEM, key))));
     }
 }
