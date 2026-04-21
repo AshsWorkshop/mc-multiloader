@@ -3,9 +3,11 @@ package net.ashwork.mc.multiloader.fabric.common.registry;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
+import net.ashwork.mc.multiloader.api.common.registry.BlockRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.impl.BlockRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.fabric.common.FabricCommonExtensionsProvider;
 import net.minecraft.core.Holder;
@@ -43,6 +45,7 @@ public class FabricRegistryExtensions implements FabricCommonExtensionsProvider 
             }
         });
         registerSpecialRegistrars(extensions, ItemRegistrar.EXT, ItemRegistrar.BASIC, Registries.ITEM, modId, ItemRegistrarWrapper::new);
+        registerSpecialRegistrars(extensions, BlockRegistrar.EXT, BlockRegistrar.BASIC, Registries.BLOCK, modId, BlockRegistrarWrapper::new);
     }
 
     private static <REGISTRY, REGISTRAR extends Registrar<REGISTRY>> void registerSpecialRegistrars(
