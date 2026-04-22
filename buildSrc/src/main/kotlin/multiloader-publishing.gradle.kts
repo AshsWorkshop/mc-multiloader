@@ -43,6 +43,14 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
+        maven {
+            name = "Repsy"
+            url = uri("https://repo.repsy.io/ashwork/mc-mods")
+            credentials {
+                username = System.getenv("REPSY_USERNAME")
+                password = System.getenv("REPSY_PASSWORD")
+            }
+        }
     }
 
     publications.withType<MavenPublication>().configureEach {
