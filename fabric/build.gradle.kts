@@ -31,9 +31,9 @@ val baseImplementation by configurations.getting
 
 dependencies {
     minecraft("com.mojang:minecraft:${resolveProperty("vanillaMinecraft")}")    
-    // This needs to also be present in "main" so that loom sets up loader properly, as it is hard-coded to "main".
+    // This needs to also be present in "main" so that loom sets up loader and classtweakers properly, as it is hard-coded to "main".
     implementation(baseImplementation("net.fabricmc:fabric-loader:${resolveProperty("fabricLoader")}")!!)
-    baseImplementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")
+    implementation(baseImplementation("net.fabricmc.fabric-api:fabric-api:${resolveProperty("fabricApi")}")!!)
 }
 
 fun generateModFile(name: String = "", dependsOn: Pair<String, String>? = null, withAccessWidener: Boolean = false, withMixins: Boolean = false): TaskProvider<Task> {

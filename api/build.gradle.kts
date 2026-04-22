@@ -21,7 +21,9 @@ internal val transformers: SourceSet = sourceSets.create("accesstransformers") {
 }
 
 transformers.resources.files.forEach {
-    project.publishedAccessTransformer(it, "data")
+    val relativePath = it.toRelativeString(transformers.resources.srcDirs.first())
+    val feature = if (relativePath.substring(0, relativePath.indexOf(File.separator)) == "data") "data" else "main"
+    project.publishedAccessTransformer(it, feature)
 }
 
 neoForge {

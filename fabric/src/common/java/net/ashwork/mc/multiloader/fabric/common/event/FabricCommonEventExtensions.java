@@ -1,0 +1,49 @@
+package net.ashwork.mc.multiloader.fabric.common.event;
+
+import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
+import net.ashwork.mc.multiloader.api.common.event.item.ModifyCreativeModeTabContents;
+import net.ashwork.mc.multiloader.fabric.common.FabricCommonExtensionsProvider;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.Arrays;
+
+/**
+ * Loader extensions for the events API.
+ */
+public class FabricCommonEventExtensions implements FabricCommonExtensionsProvider {
+
+    @Override
+    public void registerExtensions(String modId, ExtensionRegistrar extensions) {
+        extensions.provide(ModifyCreativeModeTabContents.EVENT, () -> key -> event -> CreativeModeTabEvents.modifyOutputEvent(key).register(
+                output -> event.modifyContents(new ModifyCreativeModeTabContents.Output() {
+                    @Override
+                    public CreativeModeTab.ItemDisplayParameters params() {
+                        return output.getContext();
+                    }
+
+                    @Override
+                    public void insertFirst(CreativeModeTab.TabVisibility visibility, ItemStack... stacks) {
+                        // Loop backwards to preserve ordering
+                        for (var i = stacks.length - 1; i >= 0; i--) output.prepend(stacks[i], visibility);
+                    }
+
+                    @Override
+                    public void insertAfter(ItemStack first, CreativeModeTab.TabVisibility visibility, ItemStack... stacks) {
+                        output.insertAfter(first, Arrays.asList(stacks), visibility);
+                    }
+
+                    @Override
+                    public void insertBefore(ItemStack last, CreativeModeTab.TabVisibility visibility, ItemStack... stacks) {
+                        output.insertBefore(last, Arrays.asList(stacks), visibility);
+                    }
+
+                    @Override
+                    public void accept(ItemStack stack, CreativeModeTab.TabVisibility visibility) {
+                        output.accept(stack, visibility);
+                    }
+                })
+        ));
+    }
+}

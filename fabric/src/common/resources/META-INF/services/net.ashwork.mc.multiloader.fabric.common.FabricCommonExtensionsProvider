@@ -1,1 +1,2 @@
 net.ashwork.mc.multiloader.fabric.common.registry.FabricRegistryExtensions
+net.ashwork.mc.multiloader.fabric.common.event.FabricCommonEventExtensions

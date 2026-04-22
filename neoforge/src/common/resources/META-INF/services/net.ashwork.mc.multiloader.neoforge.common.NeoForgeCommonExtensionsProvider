@@ -1,1 +1,2 @@
 net.ashwork.mc.multiloader.neoforge.common.registry.NeoForgeRegistryExtensions
+net.ashwork.mc.multiloader.neoforge.common.event.NeoForgeCommonEventExtensions
