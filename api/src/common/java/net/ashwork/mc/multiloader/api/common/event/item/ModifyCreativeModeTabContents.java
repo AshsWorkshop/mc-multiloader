@@ -25,7 +25,7 @@ public interface ModifyCreativeModeTabContents {
      *
      * @extension {@link net.ashwork.mc.multiloader.api.base.ModLoader}.
      */
-    public LoaderExtension.Key<Function<ResourceKey<CreativeModeTab>, Event<ModifyCreativeModeTabContents>>> EVENT = Multiloader.extension("modify_tab_contents_event");
+    LoaderExtension.Key<Function<ResourceKey<CreativeModeTab>, Event<ModifyCreativeModeTabContents>>> EVENT = Multiloader.extension("modify_tab_contents_event");
 
     /**
      * Modifies the contents of a {@link CreativeModeTab}.
