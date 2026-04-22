@@ -79,6 +79,9 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
+            # Get subproject prefix
+            project_prefix=$(grep 'mod_id' gradle.properties | awk -F= '{$2=$2;print $2}')
+            
             # Loop through each project
             for project in $(echo "${{ needs.check-publish.outputs.publish_packages }}" | tr ',' '\n'); do
               # Check if should publish all publications
@@ -107,7 +110,7 @@ jobs:
                 sed -i "s/mod_version_patch=.*/mod_version_patch=$mod_patch/" "$project/gradle.properties"
             
                 # Publish project packages
-                ./gradlew :$project:publish
+                ./gradlew :$project_prefix-$project:publish
               fi
             done
 
