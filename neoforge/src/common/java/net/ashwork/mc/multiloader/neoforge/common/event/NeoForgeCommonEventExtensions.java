@@ -2,13 +2,16 @@ package net.ashwork.mc.multiloader.neoforge.common.event;
 
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.common.event.item.ModifyCreativeModeTabContents;
+import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.neoforge.common.NeoForgeCommonExtensionsProvider;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-
-import java.util.Arrays;
 
 /**
  * Loader extensions for the events API.
@@ -49,5 +52,15 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
                 });
             }
         }));
+        extensions.provide(RegisterBuiltInPacks.EVENT, () -> (id, displayName, alwaysActive) -> modBus.addListener(((AddPackFindersEvent neoEvent) ->
+            neoEvent.addPackFinders(
+                    id.withPrefix("data/" + modId + "/datapacks/"),
+                    PackType.SERVER_DATA,
+                    displayName,
+                    PackSource.BUILT_IN,
+                    alwaysActive,
+                    Pack.Position.BOTTOM
+            )
+        )));
     }
 }

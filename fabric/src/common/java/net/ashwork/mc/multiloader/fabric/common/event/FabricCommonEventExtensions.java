@@ -2,8 +2,12 @@ package net.ashwork.mc.multiloader.fabric.common.event;
 
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.common.event.item.ModifyCreativeModeTabContents;
+import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.fabric.common.FabricCommonExtensionsProvider;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
@@ -45,5 +49,7 @@ public class FabricCommonEventExtensions implements FabricCommonExtensionsProvid
                     }
                 })
         ));
+        extensions.provide(RegisterBuiltInPacks.EVENT, () -> (id, displayName, alwaysActive) -> FabricLoader.getInstance().getModContainer(modId)
+                .map(container -> ResourceLoader.registerBuiltinPack(id, container, displayName, alwaysActive ? PackActivationType.ALWAYS_ENABLED : PackActivationType.NORMAL)));
     }
 }

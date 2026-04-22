@@ -4,6 +4,8 @@ import net.ashwork.mc.multiloader.api.Multiloader;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.ashwork.mc.multiloader.api.data.generator.provider.DataGatherer;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 
 import java.util.function.BiConsumer;
@@ -34,6 +36,17 @@ public interface TranslationKeyMapper {
      * @param value The localized translation.
      */
     void translate(String key, String value);
+
+    /**
+     * Adds a translation for a description id.
+     *
+     * @param namespace The namespace of the description identifier.
+     * @param key The identifier.
+     * @param value The localized translation.
+     */
+    default void descriptionId(String namespace, Identifier key, String value) {
+        this.translate(Util.makeDescriptionId(namespace, key), value);
+    }
 
     /**
      * Adds a translation for a {@link Holder}-wrapped object.
