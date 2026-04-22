@@ -17,7 +17,8 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
 
     @Override
     public void registerExtensions(String modId, IEventBus modBus, ExtensionRegistrar extensions) {
-        extensions.provide(ModifyCreativeModeTabContents.EVENT, () -> key -> event -> modBus.addListener((BuildCreativeModeTabContentsEvent neoEvent) ->
+        extensions.provide(ModifyCreativeModeTabContents.EVENT, () -> key -> event -> modBus.addListener((BuildCreativeModeTabContentsEvent neoEvent) -> {
+            if (neoEvent.getTabKey() == key) {
                 event.modifyContents(new ModifyCreativeModeTabContents.Output() {
                     @Override
                     public CreativeModeTab.ItemDisplayParameters params() {
@@ -45,7 +46,8 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
                     public void accept(ItemStack stack, CreativeModeTab.TabVisibility visibility) {
                         neoEvent.accept(stack, visibility);
                     }
-                })
-        ));
+                });
+            }
+        }));
     }
 }
