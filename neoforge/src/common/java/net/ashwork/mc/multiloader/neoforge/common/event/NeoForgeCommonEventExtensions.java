@@ -59,7 +59,7 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
                     displayName,
                     PackSource.BUILT_IN,
                     alwaysActive,
-                    Pack.Position.BOTTOM
+                    Pack.Position.TOP
             )
         )));
     }
