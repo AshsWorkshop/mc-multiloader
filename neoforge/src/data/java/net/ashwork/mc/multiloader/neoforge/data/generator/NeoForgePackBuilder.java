@@ -1,12 +1,16 @@
 package net.ashwork.mc.multiloader.neoforge.data.generator;
 
 import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
+import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
+import net.ashwork.mc.multiloader.api.util.TranslationUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 
@@ -97,6 +101,11 @@ public abstract sealed class NeoForgePackBuilder implements PackBuilder permits 
         public BuiltIn(Identifier id) {
             super();
             this.id = id;
+            this.gatherProviders(gatherer -> gatherer.add(output ->
+                    PackMetadataGenerator.forFeaturePack(output, Component.translatable(
+                            TranslationUtils.makeDescriptionId(RegisterBuiltInPacks.RESOURCE_PACK_ID, this.id, RegisterBuiltInPacks.RESOURCE_PACK_DESC)
+                    ))
+            ));
         }
 
         @Override

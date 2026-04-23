@@ -15,6 +15,10 @@ public interface RegisterBuiltInPacks {
      * The namespace representing resource packs.
      */
     String RESOURCE_PACK_ID = "resource_pack";
+    /**
+     * The description of a resource pack.
+     */
+    String RESOURCE_PACK_DESC = "desc";
 
     /**
      * Registers a built-in pack.
