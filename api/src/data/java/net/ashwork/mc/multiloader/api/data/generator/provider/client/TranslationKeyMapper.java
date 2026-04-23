@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -91,5 +92,25 @@ public interface TranslationKeyMapper {
      */
     default void item(Holder<Item> item, String value) {
         this.holder(item, value, this::item);
+    }
+
+    /**
+     * Adds a translation for a {@link Block}.
+     *
+     * @param block The {@link Block} to get the translation key from.
+     * @param value The localized translation.
+     */
+    default void block(Block block, String value) {
+        this.translate(block.getDescriptionId(), value);
+    }
+
+    /**
+     * Adds a translation for a {@link Block}.
+     *
+     * @param block The {@link Block} to get the translation key from.
+     * @param value The localized translation.
+     */
+    default void block(Holder<Block> block, String value) {
+        this.holder(block, value, this::block);
     }
 }
