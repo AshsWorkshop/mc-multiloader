@@ -70,7 +70,7 @@ public interface TranslationKeyMapper {
      * @param translate A function that maps the object to its translation.
      * @param <T> The type of the wrapped object.
      */
-    default <T> void holder(Holder<T> holder, String value, BiConsumer<T, String> translate) {
+    default <T> void holder(Holder<? extends T> holder, String value, BiConsumer<T, String> translate) {
         translate.accept(holder.value(), value);
     }
 
@@ -90,7 +90,7 @@ public interface TranslationKeyMapper {
      * @param item The {@link Item} to get the translation key from.
      * @param value The localized translation.
      */
-    default void item(Holder<Item> item, String value) {
+    default void item(Holder<? extends Item> item, String value) {
         this.holder(item, value, this::item);
     }
 
@@ -110,7 +110,7 @@ public interface TranslationKeyMapper {
      * @param block The {@link Block} to get the translation key from.
      * @param value The localized translation.
      */
-    default void block(Holder<Block> block, String value) {
+    default void block(Holder<? extends Block> block, String value) {
         this.holder(block, value, this::block);
     }
 }
