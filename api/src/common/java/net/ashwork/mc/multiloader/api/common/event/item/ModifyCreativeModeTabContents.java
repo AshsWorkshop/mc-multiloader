@@ -51,7 +51,7 @@ public interface ModifyCreativeModeTabContents {
          *
          * @param items The item holders to append.
          */
-        default void accept(Holder<? extends Item>... items) {
+        default void accept(Holder<? extends ItemLike>... items) {
             this.accept(CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, items);
         }
 
@@ -62,7 +62,7 @@ public interface ModifyCreativeModeTabContents {
          * @param visibility How the entries will be shown in the tabs menu.
          * @param items The item holders to append.
          */
-        default void accept(CreativeModeTab.TabVisibility visibility, Holder<? extends Item>... items) {
+        default void accept(CreativeModeTab.TabVisibility visibility, Holder<? extends ItemLike>... items) {
             for (var item : items) this.accept(item.value(), visibility);
         }
 
@@ -72,7 +72,7 @@ public interface ModifyCreativeModeTabContents {
          *
          * @param items The item holders to prepend.
          */
-        default void insertFirst(Holder<? extends Item>... items) {
+        default void insertFirst(Holder<? extends ItemLike>... items) {
             this.insertFirst(CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, items);
         }
 
@@ -83,8 +83,8 @@ public interface ModifyCreativeModeTabContents {
          * @param visibility How the entries will be shown in the tabs menu.
          * @param items The item holders to prepend.
          */
-        default void insertFirst(CreativeModeTab.TabVisibility visibility, Holder<? extends Item>... items) {
-            this.insertFirst(visibility, mapArray(holder -> new ItemStack((Holder<Item>) holder), items));
+        default void insertFirst(CreativeModeTab.TabVisibility visibility, Holder<? extends ItemLike>... items) {
+            this.insertFirst(visibility, mapArray(holder -> new ItemStack(holder.value()), items));
         }
 
         /**
@@ -132,7 +132,7 @@ public interface ModifyCreativeModeTabContents {
          * @param first The stack to insert after.
          * @param items The item holders to append.
          */
-        default void insertAfter(ItemStack first, Holder<? extends Item>... items) {
+        default void insertAfter(ItemStack first, Holder<? extends ItemLike>... items) {
             this.insertAfter(first, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, items);
         }
 
@@ -144,8 +144,8 @@ public interface ModifyCreativeModeTabContents {
          * @param visibility How the entries will be shown in the tabs menu.
          * @param items The item holders to append.
          */
-        default void insertAfter(ItemStack first, CreativeModeTab.TabVisibility visibility, Holder<? extends Item>... items) {
-            this.insertAfter(first, visibility, mapArray(holder -> new ItemStack((Holder<Item>) holder), items));
+        default void insertAfter(ItemStack first, CreativeModeTab.TabVisibility visibility, Holder<? extends ItemLike>... items) {
+            this.insertAfter(first, visibility, mapArray(holder -> new ItemStack((holder.value())), items));
         }
 
         /**
@@ -199,7 +199,7 @@ public interface ModifyCreativeModeTabContents {
          * @param last The stack to insert before.
          * @param items The item holders to prepend.
          */
-        default void insertBefore(ItemStack last, Holder<? extends Item>... items) {
+        default void insertBefore(ItemStack last, Holder<? extends ItemLike>... items) {
             this.insertBefore(last, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, items);
         }
 
@@ -211,8 +211,8 @@ public interface ModifyCreativeModeTabContents {
          * @param visibility How the entries will be shown in the tabs menu.
          * @param items The item holders to prepend.
          */
-        default void insertBefore(ItemStack last, CreativeModeTab.TabVisibility visibility, Holder<? extends Item>... items) {
-            this.insertBefore(last, visibility, mapArray(holder -> new ItemStack((Holder<Item>) holder), items));
+        default void insertBefore(ItemStack last, CreativeModeTab.TabVisibility visibility, Holder<? extends ItemLike>... items) {
+            this.insertBefore(last, visibility, mapArray(holder -> new ItemStack(holder.value()), items));
         }
 
         /**
