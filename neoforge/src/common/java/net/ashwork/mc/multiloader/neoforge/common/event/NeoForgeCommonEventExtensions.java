@@ -76,7 +76,7 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
                         new PackLocationInfo("mod/" + id, displayName, DEFAULT, Optional.of(new KnownPack("neoforge", "mod/" + id, version.toString()))),
                         new JarContentsPackResources.JarContentsResourcesSupplier(modInfo.getOwningFile().getFile().getContents(), prefix),
                         neoEvent.getPackType(),
-                        new PackSelectionConfig(alwaysActive, Pack.Position.BOTTOM, false)
+                        new PackSelectionConfig(alwaysActive, Pack.Position.TOP, false)
                 );
 
                 neoEvent.addRepositorySource((packConsumer) -> packConsumer.accept(pack));

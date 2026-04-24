@@ -67,11 +67,10 @@ public interface PackFactory extends IdHelper {
                     ObjectUtils.max(client.maxInclusive(), server.maxInclusive())
             );
 
-            return generator.add(
-                PackMetadataSection.FALLBACK_TYPE, new PackMetadataSection(
-                        Component.translatable(id.toLanguageKey(RegisterBuiltInPacks.RESOURCE_PACK_ID, RegisterBuiltInPacks.RESOURCE_PACK_DESC)), full
-                )
-            );
+            // Use one of the available section types since otherwise the pack is marked as incompatible
+            return generator.add(PackMetadataSection.SERVER_TYPE, new PackMetadataSection(
+                    Component.translatable(id.toLanguageKey(RegisterBuiltInPacks.RESOURCE_PACK_ID, RegisterBuiltInPacks.RESOURCE_PACK_DESC)), full
+            ));
         });
     }
 
