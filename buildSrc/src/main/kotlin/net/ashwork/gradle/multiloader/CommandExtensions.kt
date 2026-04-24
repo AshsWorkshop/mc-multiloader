@@ -4,7 +4,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 // From: https://discuss.kotlinlang.org/t/use-git-hash-as-version-number-in-build-gradle-kts/19818/8
-fun String.runCommand(workingDir: File = File("."), timeoutAmount: Long = 60, timeoutUnit: TimeUnit = TimeUnit.SECONDS): String =
+fun String.runCommand(workingDir: File = File("."), timeoutAmount: Long = 60, timeoutUnit: TimeUnit = TimeUnit.SECONDS, orElse: String? = null): String =
     ProcessBuilder(split("\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)".toRegex()))
         .directory(workingDir)
         .redirectOutput(ProcessBuilder.Redirect.PIPE)
@@ -14,7 +14,11 @@ fun String.runCommand(workingDir: File = File("."), timeoutAmount: Long = 60, ti
         .run {
             val error = errorStream.bufferedReader().readText().trim()
             if (error.isNotEmpty()) {
-                throw Exception(error)
+                if (orElse != null) {
+                    return orElse;
+                } else {
+                    throw Exception(error)
+                }
             }
             inputStream.bufferedReader().readText().trim()
         }

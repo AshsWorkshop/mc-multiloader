@@ -78,6 +78,8 @@ jobs:
           shell: bash
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+            UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
           run: |
             # Get subproject prefix
             project_prefix=$(grep 'mod_id' gradle.properties | awk -F= '{$2=$2;print $2}')
@@ -119,6 +121,8 @@ jobs:
           if: ${{ ! contains(needs.check-publish.outputs.publish_packages, 'all') }}
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+            UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
           run: ./gradlew :publish
 
         - name: Bump platform version
