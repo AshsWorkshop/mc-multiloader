@@ -3,7 +3,6 @@ package net.ashwork.mc.multiloader.api.data.generator.provider.client;
 import net.ashwork.mc.multiloader.api.Multiloader;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
 import net.ashwork.mc.multiloader.api.data.generator.provider.DataGatherer;
-import net.ashwork.mc.multiloader.api.util.TranslationUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
@@ -47,7 +46,7 @@ public interface TranslationKeyMapper {
      * @param value The localized translation.
      */
     default void descriptionId(String namespace, Identifier key, String value) {
-        this.translate(Util.makeDescriptionId(namespace, key), value);
+        this.translate(key.toLanguageKey(namespace), value);
     }
 
     /**
@@ -59,7 +58,7 @@ public interface TranslationKeyMapper {
      * @param value The localized translation.
      */
     default void descriptionId(String namespace, String suffix, Identifier key, String value) {
-        this.translate(TranslationUtils.makeDescriptionId(namespace, key, suffix), value);
+        this.translate(key.toLanguageKey(namespace, suffix), value);
     }
 
     /**

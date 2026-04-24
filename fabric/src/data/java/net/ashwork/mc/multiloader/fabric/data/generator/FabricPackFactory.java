@@ -6,12 +6,14 @@ import net.ashwork.mc.multiloader.api.data.generator.PackFactory;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * The NeoForge implementation of the {@link PackFactory}.
@@ -37,18 +39,18 @@ public class FabricPackFactory implements PackFactory {
     }
 
     @Override
+    public String id() {
+        return this.modId;
+    }
+
+    @Override
     public PackBuilder global() {
         return this.pack(new FabricPackBuilder.Global());
     }
 
     @Override
-    public PackBuilder builtIn(String id) {
-        return this.builtIn(Identifier.fromNamespaceAndPath(this.modId, id));
-    }
-
-    @Override
-    public PackBuilder builtIn(Identifier id) {
-        return this.pack(new FabricPackBuilder.BuiltIn(id));
+    public PackBuilder builtIn(Identifier id, UnaryOperator<PackMetadataGenerator> withMetadata) {
+        return this.pack(new FabricPackBuilder.BuiltIn(id, withMetadata));
     }
 
     private PackBuilder pack(FabricPackBuilder builder) {

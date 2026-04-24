@@ -4,7 +4,6 @@ import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
-import net.ashwork.mc.multiloader.api.util.TranslationUtils;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.minecraft.core.HolderLookup;
@@ -24,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * The Fabric implementation of the {@link PackBuilder}.
@@ -121,14 +121,13 @@ public abstract sealed class FabricPackBuilder implements PackBuilder permits Fa
          * A basic constructor.
          *
          * @param id The unique identifier of the built-in pack.
+         * @param withMetadata The metadata of the built-in pack.
          */
-        public BuiltIn(Identifier id) {
+        public BuiltIn(Identifier id, UnaryOperator<PackMetadataGenerator> withMetadata) {
             super();
             this.id = id;
             this.gatherProviders(gatherer -> gatherer.add(output ->
-                    PackMetadataGenerator.forFeaturePack(output, Component.translatable(
-                            TranslationUtils.makeDescriptionId(RegisterBuiltInPacks.RESOURCE_PACK_ID, this.id, RegisterBuiltInPacks.RESOURCE_PACK_DESC)
-                    ))
+                    withMetadata.apply(new PackMetadataGenerator(output))
             ));
         }
 

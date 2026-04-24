@@ -49,7 +49,7 @@ public class FabricCommonEventExtensions implements FabricCommonExtensionsProvid
                     }
                 })
         ));
-        extensions.provide(RegisterBuiltInPacks.EVENT, () -> (id, displayName, alwaysActive) -> FabricLoader.getInstance().getModContainer(modId)
+        extensions.provide(RegisterBuiltInPacks.EVENT, () -> (id, displayName, type, alwaysActive) -> FabricLoader.getInstance().getModContainer(modId)
                 .map(container -> ResourceLoader.registerBuiltinPack(id, container, displayName, alwaysActive ? PackActivationType.ALWAYS_ENABLED : PackActivationType.NORMAL)));
     }
 }

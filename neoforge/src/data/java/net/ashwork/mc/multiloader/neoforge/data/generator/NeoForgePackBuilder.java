@@ -4,7 +4,6 @@ import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.api.data.generator.DataProviderGatherer;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
-import net.ashwork.mc.multiloader.api.util.TranslationUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.DataGenerator;
@@ -20,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * The NeoForge implementation of the {@link PackBuilder}.
@@ -97,21 +97,20 @@ public abstract sealed class NeoForgePackBuilder implements PackBuilder permits 
          * A basic constructor.
          *
          * @param id The unique identifier of the built-in pack.
+         * @param withMetadata The metadata of the built-in pack.
          */
-        public BuiltIn(Identifier id) {
+        public BuiltIn(Identifier id, UnaryOperator<PackMetadataGenerator> withMetadata) {
             super();
             this.id = id;
             this.gatherProviders(gatherer -> gatherer.add(output ->
-                    PackMetadataGenerator.forFeaturePack(output, Component.translatable(
-                            TranslationUtils.makeDescriptionId(RegisterBuiltInPacks.RESOURCE_PACK_ID, this.id, RegisterBuiltInPacks.RESOURCE_PACK_DESC)
-                    ))
+                    withMetadata.apply(new PackMetadataGenerator(output))
             ));
         }
 
         @Override
         public void registerProviders(DataGenerator generator, String modId, CompletableFuture<HolderLookup.Provider> registries, ExtensionManager.Loader<NeoForgeGathererExtensionsProvider> loader) {
             // Register registries for pack first
-            var pack = generator.getBuiltinDatapack(true, this.id.getNamespace(), this.id.getPath());
+            var pack = generator.getPackGenerator(true, this.id.toString(), "resourcepacks/" + (this.id.getNamespace() == modId ? "" : (this.id.getNamespace() + "/")) + this.id.getPath());
             AtomicReference<CompletableFuture<HolderLookup.Provider>> registriesWrapper = new AtomicReference<>(registries);
             this.registerRegistries(registry -> {
                 var provider = pack.addProvider(

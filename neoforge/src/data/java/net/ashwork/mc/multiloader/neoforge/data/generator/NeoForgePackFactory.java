@@ -3,6 +3,7 @@ package net.ashwork.mc.multiloader.neoforge.data.generator;
 import net.ashwork.mc.multiloader.api.base.impl.extension.ExtensionManager;
 import net.ashwork.mc.multiloader.api.data.generator.PackBuilder;
 import net.ashwork.mc.multiloader.api.data.generator.PackFactory;
+import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -11,6 +12,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * The NeoForge implementation of the {@link PackFactory}.
@@ -39,6 +42,11 @@ public class NeoForgePackFactory implements PackFactory {
     }
 
     @Override
+    public String id() {
+        return this.modId;
+    }
+
+    @Override
     public PackBuilder global() {
         if (this.global == null) {
             this.global = new NeoForgePackBuilder.Global();
@@ -47,13 +55,8 @@ public class NeoForgePackFactory implements PackFactory {
     }
 
     @Override
-    public PackBuilder builtIn(String id) {
-        return this.builtIn(Identifier.fromNamespaceAndPath(this.modId, id));
-    }
-
-    @Override
-    public PackBuilder builtIn(Identifier id) {
-        var builder = new NeoForgePackBuilder.BuiltIn(id);
+    public PackBuilder builtIn(Identifier id, UnaryOperator<PackMetadataGenerator> withMetadata) {
+        var builder = new NeoForgePackBuilder.BuiltIn(id, withMetadata);
         this.builtIns.add(builder);
         return builder;
     }
