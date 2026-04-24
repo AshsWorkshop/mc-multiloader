@@ -2,8 +2,11 @@ package net.ashwork.mc.multiloader.neoforge.common.event;
 
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.common.event.item.ModifyCreativeModeTabContents;
+import net.ashwork.mc.multiloader.api.common.event.resources.AddReloadListeners;
 import net.ashwork.mc.multiloader.api.common.event.resources.RegisterBuiltInPacks;
 import net.ashwork.mc.multiloader.neoforge.common.NeoForgeCommonExtensionsProvider;
+import net.ashwork.mc.multiloader.neoforge.common.event.resources.NeoForgeAddReloadListeners;
+import net.ashwork.mc.multiloader.neoforge.common.event.resources.NeoForgeServerListenerExtensionsProvider;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
@@ -14,7 +17,9 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.resource.JarContentsPackResources;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -82,5 +87,6 @@ public class NeoForgeCommonEventExtensions implements NeoForgeCommonExtensionsPr
                 neoEvent.addRepositorySource((packConsumer) -> packConsumer.accept(pack));
             }
         })));
+        extensions.provide(AddReloadListeners.EVENT, () -> new NeoForgeAddReloadListeners<>(NeoForgeServerListenerExtensionsProvider.class, NeoForge.EVENT_BUS, AddServerReloadListenersEvent.class));
     }
 }

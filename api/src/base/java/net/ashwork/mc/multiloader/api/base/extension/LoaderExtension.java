@@ -46,6 +46,17 @@ public interface LoaderExtension<API> {
      */
     record Key<API>(Identifier name) {
 
+        /**
+         * Constructs a loader extension in the vanilla namespace.
+         *
+         * @param name The path of the vanilla extension.
+         * @return The vanilla extension key.
+         * @param <API> The type of the API.
+         */
+        public static <API> Key<API> vanilla(String name) {
+            return new Key<>(Identifier.withDefaultNamespace(name));
+        }
+
         @Override
         public @NonNull String toString() {
             return this.name.toString();
