@@ -1,5 +1,6 @@
 package net.ashwork.mc.multiloader.fabric.common.registry;
 
+import com.mojang.serialization.Codec;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
@@ -8,10 +9,14 @@ import net.ashwork.mc.multiloader.api.common.registry.BlockRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.RegistryCreator;
+import net.ashwork.mc.multiloader.api.common.registry.StaticRegistryBuilder;
 import net.ashwork.mc.multiloader.api.common.registry.impl.BlockItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.BlockRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.fabric.common.FabricCommonExtensionsProvider;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,6 +35,31 @@ public class FabricRegistryExtensions implements FabricCommonExtensionsProvider 
 
     @Override
     public void registerExtensions(String modId, ExtensionRegistrar extensions) {
+        extensions.provide(RegistryCreator.EXT, () -> new RegistryCreator() {
+            @Override
+            public <T> StaticRegistryBuilder createStatic(ResourceKey<Registry<T>> id) {
+                return new FabricStaticRegistryBuilder<>(
+                        FabricRegistryBuilder.create(id)
+                );
+            }
+
+            @Override
+            public <T> StaticRegistryBuilder createStaticWithDefault(ResourceKey<Registry<T>> id, Identifier defaultId) {
+                return new FabricStaticRegistryBuilder<>(
+                        FabricRegistryBuilder.createDefaulted(id, defaultId)
+                );
+            }
+
+            @Override
+            public <T> void createDatapack(ResourceKey<Registry<T>> id, Codec<T> codec) {
+                DynamicRegistries.register(id, codec);
+            }
+
+            @Override
+            public <T> void createDatapack(ResourceKey<Registry<T>> id, Codec<T> codec, Codec<T> networkCodec) {
+                DynamicRegistries.registerSynced(id, codec, networkCodec);
+            }
+        });
         extensions.provide(RegistrarAccessor.EXT, () -> new RegistrarAccessor() {
 
             @Override

@@ -1,5 +1,6 @@
 package net.ashwork.mc.multiloader.neoforge.common.registry;
 
+import com.mojang.serialization.Codec;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionHolder;
 import net.ashwork.mc.multiloader.api.base.extension.ExtensionRegistrar;
 import net.ashwork.mc.multiloader.api.base.extension.LoaderExtension;
@@ -8,6 +9,8 @@ import net.ashwork.mc.multiloader.api.common.registry.BlockRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.ItemRegistrar;
 import net.ashwork.mc.multiloader.api.common.registry.Registrar;
 import net.ashwork.mc.multiloader.api.common.registry.RegistrarAccessor;
+import net.ashwork.mc.multiloader.api.common.registry.RegistryCreator;
+import net.ashwork.mc.multiloader.api.common.registry.StaticRegistryBuilder;
 import net.ashwork.mc.multiloader.api.common.registry.impl.BlockItemRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.BlockRegistrarWrapper;
 import net.ashwork.mc.multiloader.api.common.registry.impl.ItemRegistrarWrapper;
@@ -21,6 +24,8 @@ import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -30,6 +35,7 @@ public class NeoForgeRegistryExtensions implements NeoForgeCommonExtensionsProvi
 
     @Override
     public void registerExtensions(String modId, IEventBus modBus, ExtensionRegistrar extensions) {
+        extensions.provide(RegistryCreator.EXT, () -> new NeoForgeRegistryCreator(modBus));
         extensions.provide(RegistrarAccessor.EXT, () -> new RegistrarAccessor() {
 
             @Override
