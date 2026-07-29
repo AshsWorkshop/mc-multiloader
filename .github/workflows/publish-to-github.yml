@@ -76,7 +76,7 @@ jobs:
           shell: bash
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+            UUID_USERNAME: ${{ vars.UUID_USERNAME }}
             UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
           run: |
             # Get subproject prefix
@@ -119,7 +119,7 @@ jobs:
           if: ${{ ! contains(needs.check-publish.outputs.publish_packages, 'all') }}
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+            UUID_USERNAME: ${{ vars.UUID_USERNAME }}
             UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
           run: ./gradlew :publish
 
